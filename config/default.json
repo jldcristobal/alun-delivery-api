@@ -1,0 +1,10 @@
+{
+  "node_env": "development",
+  "logLevel": "debug",
+  "host": "localhost",
+  "port": "3306",
+  "username": "root",
+  "timeout": 20000,
+  "tokenSecret": "pM4px005gmVDW4Cr11KkY6qsW234dsndfmergMkPu9S47pLhzYUjWWTgXl",
+  "tokenExpriryTime": 3600
+}

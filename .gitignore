@@ -1,0 +1,9 @@
+# IDE
+.vscode/**
+package-lock.json
+
+# Log files
+logs/
+
+# Node Modules
+node_modules/
