@@ -1,5 +1,5 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/alunyvut/public_html/
+    - export DEPLOYPATH=/home/alunyvut/public_html/alun-delivery-api/
     - /bin/cp -R * $DEPLOYPATH
