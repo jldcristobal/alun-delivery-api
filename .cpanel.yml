@@ -1,3 +1,5 @@
 ---
 deployment:
   tasks:
+    - export DEPLOYPATH=/home/alunyvut/public_html/
+    - /bin/cp -R * $DEPLOYPATH
