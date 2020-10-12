@@ -1,8 +1,8 @@
 {
   "node_env": "development",
   "logLevel": "debug",
-  "host": "localhost",
-  "port": "3306",
+  "host": "198.54.114.153",
+  "port": "80",
   "username": "root",
   "timeout": 20000,
   "tokenSecret": "pM4px005gmVDW4Cr11KkY6qsW234dsndfmergMkPu9S47pLhzYUjWWTgXl",
