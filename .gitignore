@@ -1,6 +1,5 @@
 # IDE
 .vscode/**
-package-lock.json
 
 # Log files
 logs/
