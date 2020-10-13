@@ -27,7 +27,7 @@ errorHandler.catchNotFound = (req, res, next) => {
  * Error handler function
  */
 errorHandler.handleError = (err, req, res, next) => {
-  logger.debug('error handler...');
+  logger.error(`Error: ${err.message}`);
   const jsonRes = {
     statusCode: err.status || 500,
     success: false,

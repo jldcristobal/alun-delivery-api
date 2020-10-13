@@ -135,20 +135,12 @@ definitions:
   ErrorResponse:
     type: object
     properties:
-      errors:
-        type: array
-        items:
-          type: object
-          properties:
-            code:
-              type: integer
-              example: 500
-            message:
-              type: string
-              example: "Error message"
-            details:
-              type: object
-              example: {}
+      success:
+        type: boolean
+        example: false
+      message:
+        type: string
+        example: "Error message"
               
 components:
   securitySchemes:
