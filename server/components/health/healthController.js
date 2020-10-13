@@ -17,8 +17,7 @@ health.getHealth = (req, res) => {
   const jsonRes = {
     statusCode: 200,
     success: true,
-    message: 'Server is up!',
-    status: 'UP',
+    message: 'Server is up!'
   };
 
   util.sendResponse(res, jsonRes);

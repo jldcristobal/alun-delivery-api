@@ -17,6 +17,6 @@ logger.debug('setting up /fees route');
 /**
  * Add routes
  */
-router.get('/distance', feesCtrl.getByDistance);
+router.post('/distance', feesCtrl.getByDistance);
 
 module.exports = router;
