@@ -12,9 +12,10 @@ const nocache = require('nocache')
 const path = require('path');
 const swaggerUi = require('swagger-ui-express');
 
-const node_env = config.node_env || 'development';
+const node_env = config.app.node_env || 'development';
 
 const errorHandler = require('./middlewares/error-handler')
+const mysqlDbHelper=require('./helpers/mysql-db-helper');
 const routes = require('./components');
 
 const app = express();
@@ -106,10 +107,20 @@ app.use(errorHandler.catchNotFound);
 app.use(errorHandler.handleError);
 
 /**
+ * Connect to database
+ */
+let mysqlConnect = mysqlDbHelper.connect();
+mysqlConnect.then((connect) => {
+	logger.info(`Database connected: ${JSON.stringify(connect)}`)
+}).catch((error) => {
+	logger.error(`Database connection error: ${error}`)
+});  
+
+/**
  * Start server
  */
-const host = process.env.HOST || config.host;
-const port = process.env.PORT || config.port;
+const host = config.app.host;
+const port = config.app.port;
 
 app.listen(port, () => {
 	logger.info(`App listening on http://${host}:${port}`);
