@@ -6,45 +6,6 @@ info:
     Alun Delivery Courier API Documentation. 
 
 paths:
-  
-  "/api/access-token":
-    post:
-      summary: get access token 
-      tags:
-      - access token
-      description: get access token
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/definitions/accessTokenSource"
-      responses:
-        "200":
-          description: Success
-          content:
-            application/json:
-                schema:
-                  type: object
-                  properties:
-                    success:
-                      type: boolean
-                      example: true
-                    result:
-                      type: string
-                      example: "xxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                    
-        "500":
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: "#/definitions/ErrorResponse"
-
   "/api/health":
     get:
       tags:
@@ -64,17 +25,104 @@ paths:
                   success:
                     type: boolean
                     example: true
-                  status:
-                    type: string
-                    example: "UP"
                   message:
                     type: string
                     example: "Server is up!"
-      security:
-      - bearerAuth: []
+      # security:
+      # - bearerAuth: []
   
+  # "/api/access-token":
+  #   post:
+  #     summary: get access token 
+  #     tags:
+  #     - access token
+  #     description: get access token
+  #     consumes:
+  #       - application/json
+  #     produces:
+  #       - application/json
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: "#/definitions/accessTokenSource"
+  #     responses:
+  #       "200":
+  #         description: Success
+  #         content:
+  #           application/json:
+  #               schema:
+  #                 type: object
+  #                 properties:
+  #                   success:
+  #                     type: boolean
+  #                     example: true
+  #                   result:
+  #                     type: string
+  #                     example: "xxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                    
+  #       "500":
+  #         description: Error
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/definitions/ErrorResponse"
+
+  "/api/fees/distance":
+    post:
+      summary: Get delivery fee according to location distances 
+      tags:
+      - Delivery Fee
+      description: Get delivery fee by distance
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/definitions/deliveryFeeSource"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+                schema:
+                  type: object
+                  properties:
+                    success:
+                      type: boolean
+                      example: true
+                    result:
+                      type: object
+                      example: {
+                        "deliveryFee": 69
+                      }
+        "500":
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/definitions/ErrorResponse"
+
 definitions:
-  
+  deliveryFeeSource:
+    properties:
+        deliverFrom:
+          type: object
+          example: {
+            "city": "Nabua",
+            "barangay": "San Nicolas (Poblacion)"
+          }
+        deliverTo:
+          type: object
+          example: {
+            "city": "Baao",
+            "barangay": "Santa Isabel"
+          }
   accessTokenSource:
     properties:
         userId:
