@@ -4,9 +4,7 @@
     "host": "",
     "port": ""
   },
-  "logLevel": "",
   "database": {
-      "id": "",
       "host": "",
       "port": "",
       "user": "",
