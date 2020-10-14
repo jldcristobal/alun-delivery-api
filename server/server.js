@@ -25,25 +25,25 @@ app.use(cors());
 /**
  * Setup logger
  */
-try {
-    let date = new moment().format('YYYY-MM-DD')
+// try {
+//     let date = new moment().format('YYYY-MM-DD')
     
-    log4js.configure({
-        appenders: {
-            out: { type: 'stdout' },
-            fileLog: { type: 'dateFile', filename: 'logs/' + date + '.log', pattern: '.yyyy-MM-dd' },
-        },
-        categories: {
-          default: { appenders: ['out', 'fileLog'], level: 'all' }
-		}
-    });
-} catch (err) {
-    console.log(err)
-}
+//     log4js.configure({
+//         appenders: {
+//             out: { type: 'stdout' },
+//             fileLog: { type: 'dateFile', filename: 'logs/' + date + '.log', pattern: '.yyyy-MM-dd' },
+//         },
+//         categories: {
+//           default: { appenders: ['out', 'fileLog'], level: 'all' }
+// 		}
+//     });
+// } catch (err) {
+//     console.log(err)
+// }
 
-const logger = log4js.getLogger('server');
-logger.level = config.logLevel;
-logger.debug('Setting up app: registering routes, middleware...');
+// const logger = log4js.getLogger('server');
+// logger.level = config.logLevel;
+// logger.debug('Setting up app: registering routes, middleware...');
 
 /**
  * Update Swagger Document
@@ -111,9 +111,11 @@ app.use(errorHandler.handleError);
  */
 let mysqlConnect = mysqlDbHelper.connect();
 mysqlConnect.then((connect) => {
-	logger.info(`Database connected: ${JSON.stringify(connect)}`)
+	// logger.info(`Database connected: ${JSON.stringify(connect)}`)
+	console.log(`Database connected: ${JSON.stringify(connect)}`)
 }).catch((error) => {
-	logger.error(`Database connection error: ${error}`)
+	// logger.error(`Database connection error: ${error}`)
+	console.log(`Database connection error: ${error}`)
 });  
 
 /**
@@ -123,6 +125,8 @@ const host = config.app.host;
 const port = config.app.port;
 
 app.listen(port, () => {
-	logger.info(`App listening on http://${host}:${port}`);
-    logger.info(`Swagger UI is available at http://${host}:${port}/api-docs`);
+	// logger.info(`App listening on http://${host}:${port}`);
+	// logger.info(`Swagger UI is available at http://${host}:${port}/api-docs`);
+	console.log(`App listening on http://${host}:${port}`);
+	console.log(`Swagger UI is available at http://${host}:${port}/api-docs`);
 });

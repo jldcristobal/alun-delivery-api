@@ -7,8 +7,8 @@ const util = require('../helpers/util');
 /**
  * Set up logging
  */
-const logger = log4js.getLogger('authentication handler');
-logger.level = config.logLevel;
+// const logger = log4js.getLogger('authentication handler');
+// logger.level = config.logLevel;
 
 /**
  * auth Handler object
@@ -20,14 +20,14 @@ const authHandler = {};
  * auth handler function
  */
 authHandler.authenticateUser = (req, res, next) => {
-    logger.debug('authenticateUser handler...');
+    // logger.debug('authenticateUser handler...');
+    console.log('authenticateUser handler...');
     let token = req.headers.authorization;
     if (!token) {
         jsonRes = {
             errors: [{
                 code: 401,
-                message: 'No token provided.',
-                details: {}
+                message: 'No token provided.'
             }],
             statusCode: 401
         };
@@ -39,8 +39,7 @@ authHandler.authenticateUser = (req, res, next) => {
                 jsonRes = {
                     errors: [{
                         code: 401,
-                        message: 'user un-authorized',
-                        details: {}
+                        message: 'user un-authorized'
                     }],
                     statusCode: 401
                 };

@@ -3,8 +3,8 @@ const config = require('config');
 
 const mysqlDbHelper = require('../../helpers/mysql-db-helper');
 const util = require('../../helpers/util');
-const logger = log4js.getLogger('controllers - delivery fee');
-logger.level = config.logLevel;     
+// const logger = log4js.getLogger('controllers - delivery fee');
+// logger.level = config.logLevel;     
 
 /**
  * Controller object
@@ -15,7 +15,8 @@ const fees = {};
  * Get delivery fee according to distance
  */ 
 fees.getByDistance = (req, res) => {
-  logger.debug('inside getByDistance()...');
+  // logger.debug('inside getByDistance()...');
+  console.log('inside getByDistance()...');
   
   let jsonRes;
   
@@ -94,7 +95,7 @@ fees.getByDistance = (req, res) => {
     }
   }).catch((error) => {
     console.log(error);
-    logger.error(error);
+    // logger.error(error);
 
     jsonRes = {
       errors: [{

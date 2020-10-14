@@ -11,8 +11,8 @@ const util = {};
 /**
  * Set up logging
  */
-const logger = log4js.getLogger('helpers - util');
-logger.level = config.logLevel;
+// const logger = log4js.getLogger('helpers - util');
+// logger.level = config.logLevel;
 
 /**
  * Send http response helper

@@ -9,10 +9,10 @@ const router = express.Router();
 /**
  * Set up logging
  */
-const logger = log4js.getLogger('routes - fees');
-logger.level = config.logLevel;
+// const logger = log4js.getLogger('routes - fees');
+// logger.level = config.logLevel;
 
-logger.debug('setting up /fees route');
+// logger.debug('setting up /fees route');
 
 /**
  * Add routes

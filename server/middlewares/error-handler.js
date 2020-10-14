@@ -7,8 +7,8 @@ const util = require('../helpers/util');
 /**
  * Set up logging
  */
-const logger = log4js.getLogger('error-handler');
-logger.level = config.logLevel;
+// const logger = log4js.getLogger('error-handler');
+// logger.level = config.logLevel;
 
 /**
  * Error Handler object
@@ -19,7 +19,8 @@ const errorHandler = {};
  * Catch 404 Error and forward to error handler function
  */
 errorHandler.catchNotFound = (req, res, next) => {
-  logger.error(`404: The path ${req.url} does not exist`);
+  // logger.error(`404: The path ${req.url} does not exist`);
+  console.log(`404: The path ${req.url} does not exist`);
   next(createError(404, '404: Page not found'));
 };
 
@@ -27,7 +28,8 @@ errorHandler.catchNotFound = (req, res, next) => {
  * Error handler function
  */
 errorHandler.handleError = (err, req, res, next) => {
-  logger.error(`Error: ${err.message}`);
+  // logger.error(`Error: ${err.message}`);
+  console.log(`Error: ${err.message}`);
   const jsonRes = {
     statusCode: err.status || 500,
     success: false,

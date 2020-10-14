@@ -9,10 +9,10 @@ const router = express.Router();
 /**
  * Set up logging
  */
-const logger = log4js.getLogger('routes - accessToken');
-logger.level = config.logLevel;
+// const logger = log4js.getLogger('routes - accessToken');
+// logger.level = config.logLevel;
 
-logger.debug('setting up /accessToken route');
+// logger.debug('setting up /accessToken route');
 
 
 /**
