@@ -31,7 +31,7 @@ fees.getByDistance = (req, res) => {
   let one = locationFrom[1] + ', ' + locationFrom[0]
   let two = locationTo[1] + ', ' + locationTo[0]
   
-  const query = `SELECT direct_distance FROM rinconadadd WHERE one = "${one}" AND two = "${two}"`
+  const query = `SELECT direct_distance FROM rinconadaDD WHERE one = "${one}" AND two = "${two}"`
   
   let getDirectDistance = mysqlDbHelper.execute(query)
   let directDistance;
