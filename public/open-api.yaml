@@ -99,7 +99,7 @@ paths:
                     result:
                       type: object
                       example: {
-                        "deliveryFee": 69
+                        "deliveryFee": 200
                       }
         "500":
           description: Error
@@ -111,6 +111,12 @@ paths:
 definitions:
   deliveryFeeSource:
     properties:
+        perishable:
+          type: boolean
+          example: false
+        vahicleType:
+          type: string
+          example: "motorcycle/tricycle/multicab/private"
         deliverFrom:
           type: object
           example: {
