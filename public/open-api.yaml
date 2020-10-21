@@ -28,47 +28,83 @@ paths:
                   message:
                     type: string
                     example: "Server is up!"
-      # security:
-      # - bearerAuth: []
-  
-  # "/api/access-token":
-  #   post:
-  #     summary: get access token 
-  #     tags:
-  #     - access token
-  #     description: get access token
-  #     consumes:
-  #       - application/json
-  #     produces:
-  #       - application/json
-  #     requestBody:
-  #       required: true
-  #       content:
-  #         application/json:
-  #           schema:
-  #             $ref: "#/definitions/accessTokenSource"
-  #     responses:
-  #       "200":
-  #         description: Success
-  #         content:
-  #           application/json:
-  #               schema:
-  #                 type: object
-  #                 properties:
-  #                   success:
-  #                     type: boolean
-  #                     example: true
-  #                   result:
-  #                     type: string
-  #                     example: "xxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                    
-  #       "500":
-  #         description: Error
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: "#/definitions/ErrorResponse"
 
+  "/api/user/add":
+    post:
+      summary: Create new user
+      tags:
+      - User Enrollment
+      description: Register user
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/definitions/userAddSource"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+                schema:
+                  type: object
+                  properties:
+                    success:
+                      type: boolean
+                      example: true
+                    result:
+                      type: string
+                      example: "User enrolled successfully"
+                    
+        "500":
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/definitions/ErrorResponse"
+
+  "/api/token":
+    post:
+      summary: Create access token 
+      tags:
+      - Access Token
+      description: Get access token
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/definitions/accessTokenSource"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+                schema:
+                  type: object
+                  properties:
+                    success:
+                      type: boolean
+                      example: true
+                    result:
+                      type: string
+                      example: "xxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                    
+        "500":
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/definitions/ErrorResponse"
+      
   "/api/fees/distance":
     post:
       summary: Get delivery fee according to location distances 
@@ -107,6 +143,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/definitions/ErrorResponse"
+      security:
+      - bearerAuth: []
 
   "/api/merchant/contact":
     post:
@@ -153,13 +191,40 @@ paths:
             application/json:
               schema:
                 $ref: "#/definitions/ErrorResponse"
+      security:
+      - bearerAuth: []
 
 definitions:
+  userAddSource:
+    properties:
+        userType:
+          type: string
+          example: "internal/external"
+        organization:
+          type: string
+          example: "Prosperna //only required if userType=external"
+        username:
+          type: string
+          example: "username"
+        password:
+          type: string
+          example: "password"
+
+  accessTokenSource:
+    properties:
+        username:
+          type: string
+          example: "username"
+        password:
+          type: string
+          example: "password"
+
   merchantContactSource:
     properties:
         merchantName:
           type: string
           example: "Desny Grill"
+
   deliveryFeeSource:
     properties:
         perishable:
@@ -180,14 +245,7 @@ definitions:
             "city": "Baao",
             "barangay": "Santa Isabel"
           }
-  accessTokenSource:
-    properties:
-        userId:
-          type: string
-          example: "userId"
-        password:
-          type: string
-          example: "password"
+  
   
   ErrorResponse:
     type: object

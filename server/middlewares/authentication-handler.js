@@ -1,7 +1,6 @@
-
 const log4js = require('log4js');
 const config = require('config');
-const JWT = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 const util = require('../helpers/util');
 
 /**
@@ -34,7 +33,7 @@ authHandler.authenticateUser = (req, res, next) => {
         util.sendResponse(res, jsonRes);
     } else {
         token = token.split(" ")[1];
-        JWT.verify(token, config.tokenSecret, function (err, decoded) {
+        jwt.verify(token, config.tokenSecret, function (err, decoded) {
             if (err) {
                 jsonRes = {
                     errors: [{
@@ -45,15 +44,12 @@ authHandler.authenticateUser = (req, res, next) => {
                 };
                 util.sendResponse(res, jsonRes);
             } else {
-                console.log('*************************** user authenticated');
-                console.log(decoded);
+                console.log('User authenticated');
                 res.locals.user = decoded;
                 next();
             }
-
-    });
+        });
     }
-
 };
 
 module.exports = authHandler;
