@@ -146,6 +146,84 @@ paths:
       security:
       - bearerAuth: []
 
+  "/api/merchant/add":
+    post:
+      summary: Add merchant 
+      tags:
+      - Merchant
+      description: Add merchant
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/definitions/addMerchantSource"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+                schema:
+                  type: object
+                  properties:
+                    success:
+                      type: boolean
+                      example: true
+                    result:
+                      type: string
+                      example: "Merchant Added Successfully"
+        "500":
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/definitions/ErrorResponse"
+      security:
+      - bearerAuth: []
+
+  "/api/merchant/contact/add":
+    post:
+      summary: Add merchant contact
+      tags:
+      - Merchant
+      description: Add merchant contact
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/definitions/addMerchantContactSource"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+                schema:
+                  type: object
+                  properties:
+                    success:
+                      type: boolean
+                      example: true
+                    result:
+                      type: string
+                      example: "Merchant Contact Added Successfully"
+        "500":
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/definitions/ErrorResponse"
+      security:
+      - bearerAuth: []
+
   "/api/merchant/contact":
     post:
       summary: Get merchant contact list 
@@ -219,12 +297,6 @@ definitions:
           type: string
           example: "password"
 
-  merchantContactSource:
-    properties:
-        merchantName:
-          type: string
-          example: "Desny Grill"
-
   deliveryFeeSource:
     properties:
         perishable:
@@ -245,7 +317,38 @@ definitions:
             "city": "Baao",
             "barangay": "Santa Isabel"
           }
-  
+
+  addMerchantSource:
+    properties:
+        merchantName:
+          type: string
+          example: "Shawarma Shack"
+
+  addMerchantContactSource:
+    properties:
+        merchantName:
+          type: string
+          example: "Desny Grill"
+        merchantContact:
+          type: object
+          example: [
+              {
+                  "name": "Achi Maglanque",
+                  "email": "msg@email.com"
+              },
+              {
+                  "name": "Ronnie Tibak",
+                  "email": "neil@email.com"
+              }
+          ]
+
+  merchantContactSource:
+    properties:
+        merchantName:
+          type: string
+          example: "Desny Grill"
+
+    
   
   ErrorResponse:
     type: object

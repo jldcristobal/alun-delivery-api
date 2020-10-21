@@ -17,7 +17,8 @@ const router = express.Router();
 /**
  * Add routes
  */
-// router.get('/:merchantName', merchantsCtrl.validateMerchant);
+router.post('/add', merchantCtrl.addMerchant);
+router.post('/contact/add', merchantCtrl.addMerchantContact);
 router.post('/contact', merchantCtrl.getMerchantContacts);
 
 module.exports = router;

@@ -12,6 +12,91 @@ const util = require('../../helpers/util');
 const merchant = {};
 
 /**
+ * Add  to list of merchants
+ * @param {merchantName, merchantContacts} req 
+ * @param {*} res 
+ */
+merchant.addMerchant = async (req, res) => {
+  // logger.info('inside addMerchant()...');
+  // logger.debug('request body to add merchant -');
+  // logger.debug(req.body);
+  console.log('inside addMerchant()...');
+
+  let jsonRes;
+
+  const query = `INSERT INTO merchants(merchant_name) VALUES("${req.body.merchantName}")`
+  let addMerchant = mysqlDbHelper.execute(query)
+  
+  addMerchant.then(() => { 
+      jsonRes = {
+          statusCode: 200,
+          success: true,
+          message: 'Merchant added successfully'
+      };  
+  }).catch((error) => {
+      console.log(error)
+
+      jsonRes = {
+          statusCode: 500,
+          success: false,
+          message: error,
+      };
+  }).finally(() => {
+      util.sendResponse(res, jsonRes);
+  })
+};
+
+/**
+ * Add  to list of merchants
+ * @param {merchantName} req 
+ * @param {*} res 
+ */
+merchant.addMerchantContact = async (req, res) => {
+  // logger.info('inside addMerchantContact()...');
+  // logger.debug('request body to add merchant contact -');
+  // logger.debug(req.body);
+  console.log('inside addMerchantContact()...');
+
+  let jsonRes;
+
+   let merchantName = req.body.merchantName
+   let merchantContacts = req.body.merchantContact
+
+     // TODO: validate if merchant contact already exists
+
+    let values = ''
+    for(let i = 0; i < merchantContacts.length; i++) {
+      values += `(`
+      values += `(SELECT merchant_id FROM merchants WHERE merchant_name = "${merchantName}"), `
+      values += `"` + merchantContacts[i].name + `", `
+      values += `"` + merchantContacts[i].email + `"`
+      values += `)`
+      if(i < merchantContacts.length - 1) values += `, `
+    }
+
+  const query = `INSERT INTO merchant_contacts(merchant_id, merchant_contact_name, merchant_contact_email) VALUES ${values}`
+  let addMerchantContact = mysqlDbHelper.execute(query)
+  
+  addMerchantContact.then(() => { 
+      jsonRes = {
+          statusCode: 200,
+          success: true,
+          message: 'Merchant Contact added successfully'
+      };  
+  }).catch((error) => {
+      console.log(error)
+
+      jsonRes = {
+          statusCode: 500,
+          success: false,
+          error: error,
+      };
+  }).finally(() => {
+      util.sendResponse(res, jsonRes);
+  })
+};
+
+/**
  * Get merchant contact list
  */ 
 merchant.getMerchantContacts = (req, res) => {
