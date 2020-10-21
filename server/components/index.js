@@ -9,6 +9,7 @@ const app = express();
 
 const health = require('./health');
 const deliveryFee = require('./fees');
+const merchant = require('./merchant');
 // const userEnrollment = require('./user-enrollment');
 const router = express.Router();
 // const accessToken = require('./access-token');
@@ -31,6 +32,7 @@ app.use(errorHandler.handleError);
  */
 router.use('/health', health);
 router.use('/fees', deliveryFee);
+router.use('/merchant', merchant);
 // router.use('/access-token',accessToken);
 // router.use('/user-enrollment',userEnrollment);
 router.use(authHandler.authenticateUser);
