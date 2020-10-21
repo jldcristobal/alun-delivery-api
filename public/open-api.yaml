@@ -108,7 +108,58 @@ paths:
               schema:
                 $ref: "#/definitions/ErrorResponse"
 
+  "/api/merchant/contact":
+    post:
+      summary: Get merchant contact list 
+      tags:
+      - Merchant
+      description: Get merchant contact list 
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/definitions/merchantContactSource"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+                schema:
+                  type: object
+                  properties:
+                    success:
+                      type: boolean
+                      example: true
+                    result:
+                      type: object
+                      example: [
+                          {
+                              "name": "Ronnie Mesa",
+                              "email": "ronnie@alun.app"
+                          },
+                          {
+                              "name": "Achi Maglanque",
+                              "email": "achimags@alun.app"
+                          }
+                      ]
+        "500":
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/definitions/ErrorResponse"
+
 definitions:
+  merchantContactSource:
+    properties:
+        merchantName:
+          type: string
+          example: "Desny Grill"
   deliveryFeeSource:
     properties:
         perishable:
