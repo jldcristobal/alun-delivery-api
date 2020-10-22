@@ -104,13 +104,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/definitions/ErrorResponse"
-      
+  
   "/api/fees/distance":
     post:
       summary: Get delivery fee according to location distances 
       tags:
       - Delivery Fee
-      description: Get delivery fee by distance
+      description: For food delivery
       consumes:
         - application/json
       produces:
@@ -121,6 +121,47 @@ paths:
           application/json:
             schema:
               $ref: "#/definitions/deliveryFeeSource"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+                schema:
+                  type: object
+                  properties:
+                    success:
+                      type: boolean
+                      example: true
+                    result:
+                      type: object
+                      example: {
+                        "deliveryFee": 150
+                      }
+        "500":
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/definitions/ErrorResponse"
+      security:
+      - bearerAuth: []
+          
+  "/api/fees/distance/courier":
+    post:
+      summary: Get delivery fee of courier according to location distances 
+      tags:
+      - Delivery Fee
+      description: For courier services
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/definitions/deliveryFeeCourierSource"
       responses:
         "200":
           description: Success
@@ -299,10 +340,25 @@ definitions:
 
   deliveryFeeSource:
     properties:
+        deliverFrom:
+          type: object
+          example: {
+            "city": "Nabua",
+            "barangay": "San Nicolas (Poblacion)"
+          }
+        deliverTo:
+          type: object
+          example: {
+            "city": "Baao",
+            "barangay": "Santa Isabel"
+          }
+
+  deliveryFeeCourierSource:
+    properties:
         perishable:
           type: boolean
           example: false
-        vahicleType:
+        vehicleType:
           type: string
           example: "motorcycle/tricycle/multicab/private"
         deliverFrom:
@@ -347,8 +403,6 @@ definitions:
         merchantName:
           type: string
           example: "Desny Grill"
-
-    
   
   ErrorResponse:
     type: object

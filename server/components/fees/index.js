@@ -18,5 +18,6 @@ const router = express.Router();
  * Add routes
  */
 router.post('/distance', feesCtrl.getByDistance);
+router.post('/distance/courier', feesCtrl.getByCourierDistance);
 
 module.exports = router;
