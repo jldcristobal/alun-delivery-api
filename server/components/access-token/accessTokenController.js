@@ -2,8 +2,9 @@ const log4js = require('log4js');
 const config = require('config');
 const jwt = require('jsonwebtoken');
 
-const mysqlDbHelper = require('../../helpers/mysql-db-helper');
 const util = require('../../helpers/util');
+
+const User = require('../user-enrollment/userEnrollmentModel')
 
 // const logger = log4js.getLogger('controllers - accessToken');
 // logger.level = config.logLevel;
@@ -16,21 +17,31 @@ const accessToken = {};
 accessToken.generateAccessToken = async (req, res) => {
     // logger.debug('inside generateAccessToken()...');
     let jsonRes;
-    const password = req.body.password;
-    
-    const username = req.body.username;
-    let query = `SELECT * FROM users where username = "${username}"`
-    let getUser = mysqlDbHelper.execute(query)
-    getUser.then((user) => { 
-        if(user.length > 0) {
-            let salt = user[0].salt
+
+    try {
+        const username = req.body.username;
+        const getUser = await User.findOne({
+            where: { username: username }
+        })
+
+        if(getUser === null) {
+            jsonRes = {
+                errors: [{
+                    code: 401,
+                    message: 'User credentials are invalid'
+                }],
+                statusCode: 401
+            };
+        } else {
+            const password = req.body.password;
+            let salt = getUser.salt
             const passwordHash = util.hashPassword(password, salt);
 
-            if(passwordHash === user[0].password) {
+            if(passwordHash === getUser.password) {
                 let userDetails = {
-                    username: user[0].username,
-                    userType: user[0].userType,
-                    organization: user[0].organization
+                    username: getUser.username,
+                    userType: getUser.userType,
+                    organization: getUser.organization
                 };
                 // logger.debug('generateAccessToken user authenticated');
                 let token = jwt.sign(userDetails, config.tokenSecret, {
@@ -50,21 +61,16 @@ accessToken.generateAccessToken = async (req, res) => {
                     statusCode: 401
                 };
             }
-        } else {
-            jsonRes = {
-                errors: [{
-                    code: 401,
-                    message: 'User credentials are invalid'
-                }],
-                statusCode: 401
-            };
         }
-        
-    }).catch((error) => {
-        console.log(error)
-    }).finally(() => {
-        util.sendResponse(res, jsonRes);
-    })
+    } catch(error) {
+        jsonRes = {
+            statusCode: 500,
+            success: false,
+            error: error,
+        };
+    }
+
+    util.sendResponse(res, jsonRes);    
 };
 
 module.exports = accessToken;

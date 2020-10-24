@@ -1,8 +1,8 @@
 // const log4js = require('log4js');
 const config = require('config');
-
-const mysqlDbHelper = require('../../helpers/mysql-db-helper');
 const util = require('../../helpers/util');
+
+const User = require('./userEnrollmentModel')
 
 // const logger = log4js.getLogger('controllers - userEnrollment');
 // logger.level = config.logLevel;
@@ -21,37 +21,45 @@ userEnrollment.userEnroll = async (req, res) => {
 
     let jsonRes;
 
-    // user enroll and import 
-
     const salt = util.getSalt();
     const passwordHash = util.hashPassword(req.body.password, salt);
     
     let userType = req.body.userType
-    let organization = userType === 'external' ? '"' + req.body.organization + '"' : null
-
-    // TODO: validate uniqueness of user
-
-    const query = `INSERT INTO users(user_type, organization, username, password, salt) VALUES("${userType}", ${organization}, "${req.body.username}", "${passwordHash}", "${salt}")`
-    let addUser = mysqlDbHelper.execute(query)
+    let organization = userType === 'external' ? req.body.organization : null
     
-    addUser.then(() => { 
-        jsonRes = {
-            statusCode: 200,
-            success: true,
-            message: 'User enrolled successfully'
-        };  
-    }).catch((error) => {
-        console.log(error)
+    try {
+        let [, created] = await User.findOrCreate({
+            where: { username: req.body.username },
+            defaults: {
+                user_type: userType,
+                organization: organization,
+                username: req.body.username,
+                password: passwordHash,
+                salt: salt
+            }
+        })
 
+        if(!created) {
+            jsonRes = {
+                statusCode: 400,
+                success: false,
+                message: 'Username already exists'
+            };
+        } else {
+            jsonRes = {
+                statusCode: 200,
+                success: true,
+                message: 'User enrolled successfully'
+            }; 
+        }
+    } catch(error) {
         jsonRes = {
             statusCode: 500,
             success: false,
-            message: error,
+            error: error,
         };
-    }).finally(() => {
-        util.sendResponse(res, jsonRes);
-    })
-    
+    }
+    util.sendResponse(res, jsonRes);    
 };
 
 module.exports = userEnrollment;

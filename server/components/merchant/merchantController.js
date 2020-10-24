@@ -1,7 +1,9 @@
 const log4js = require('log4js');
 const config = require('config');
 
-const mysqlDbHelper = require('../../helpers/mysql-db-helper');
+const Merchant = require('./merchantModel')
+const MerchantContact = require('./merchantContactModel')
+
 const util = require('../../helpers/util');
 // const logger = log4js.getLogger('controllers - delivery fee');
 // logger.level = config.logLevel;     
@@ -24,31 +26,39 @@ merchant.addMerchant = async (req, res) => {
 
   let jsonRes;
 
-  const query = `INSERT INTO merchants(merchant_name) VALUES("${req.body.merchantName}")`
-  let addMerchant = mysqlDbHelper.execute(query)
+  try{
+    let [, created] = await Merchant.findOrCreate({
+      where: { merchant_name: req.body.merchantName }
+    })
   
-  addMerchant.then(() => { 
-      jsonRes = {
-          statusCode: 200,
-          success: true,
-          message: 'Merchant added successfully'
-      };  
-  }).catch((error) => {
-      console.log(error)
+    if(!created) {
+        jsonRes = {
+            statusCode: 400,
+            success: false,
+            message: 'Merchant already exists'
+        };
+    } else {
+        jsonRes = {
+            statusCode: 200,
+            success: true,
+            message: 'Merchant added successfully'
+        }; 
+    }
+  } catch(error) {
+    console.log(error)
 
       jsonRes = {
           statusCode: 500,
           success: false,
           message: error,
       };
-  }).finally(() => {
-      util.sendResponse(res, jsonRes);
-  })
+  }
+  util.sendResponse(res, jsonRes);
 };
 
 /**
  * Add  to list of merchants
- * @param {merchantName} req 
+ * @param {merchantName, merchantContact} req 
  * @param {*} res 
  */
 merchant.addMerchantContact = async (req, res) => {
@@ -59,73 +69,119 @@ merchant.addMerchantContact = async (req, res) => {
 
   let jsonRes;
 
-   let merchantName = req.body.merchantName
-   let merchantContacts = req.body.merchantContact
-
-     // TODO: validate if merchant contact already exists
-
-    let values = ''
-    for(let i = 0; i < merchantContacts.length; i++) {
-      values += `(`
-      values += `(SELECT merchant_id FROM merchants WHERE merchant_name = "${merchantName}"), `
-      values += `"` + merchantContacts[i].name + `", `
-      values += `"` + merchantContacts[i].email + `"`
-      values += `)`
-      if(i < merchantContacts.length - 1) values += `, `
-    }
-
-  const query = `INSERT INTO merchant_contacts(merchant_id, merchant_contact_name, merchant_contact_email) VALUES ${values}`
-  let addMerchantContact = mysqlDbHelper.execute(query)
+  try {
+    let merchantName = req.body.merchantName
+    let merchantContacts = req.body.merchantContact
   
-  addMerchantContact.then(() => { 
-      jsonRes = {
+    let findMerchant = await Merchant.findOne({
+      where: { merchant_name: merchantName }
+    })
+  
+    if(findMerchant !== null) {
+      let merchantId = findMerchant.merchant_id
+
+      let addMerchantContact 
+  
+      if(merchantContacts.length > 1) {
+        let body = []
+    
+        merchantContacts.forEach((contact) => {
+          body.push({
+            merchant_id: merchantId,
+            merchant_contact_name: contact.name,
+            merchant_contact_email: contact.email
+          })
+        })
+    
+        addMerchantContact = await MerchantContact.bulkCreate(body)
+      } else {
+        addMerchantContact = await MerchantContact.create({
+          merchant_id: merchantId,
+          merchant_contact_name: merchantContacts[0].name,
+          merchant_contact_email: merchantContacts[0].email
+        })
+      }
+      
+      if(addMerchantContact !== null) {
+        jsonRes = {
           statusCode: 200,
           success: true,
           message: 'Merchant Contact added successfully'
-      };  
-  }).catch((error) => {
-      console.log(error)
-
+        }; 
+      }
+    } else {
       jsonRes = {
-          statusCode: 500,
-          success: false,
-          error: error,
+        statusCode: 500,
+        success: false,
+        message: 'Merchant does not exist',
       };
-  }).finally(() => {
-      util.sendResponse(res, jsonRes);
-  })
+    }
+  } catch(error) {
+    console.log(error)
+
+    jsonRes = {
+        statusCode: 500,
+        success: false,
+        error: error,
+    };
+  }
+
+  util.sendResponse(res, jsonRes);
 };
 
 /**
  * Get merchant contact list
  */ 
-merchant.getMerchantContacts = (req, res) => {
+merchant.getMerchantContacts = async (req, res) => {
   // logger.debug('inside getByDistance()...');
   console.log('inside getMerchantContacts()...');
   
   let jsonRes;
   
-  const merchantName = req.body.merchantName
-  
-  let query = `SELECT * FROM merchants WHERE merchant_name = "${merchantName}"`
-  let getMerchantId = mysqlDbHelper.execute(query)
+  try {
+    const merchantName = req.body.merchantName
 
-  let merchantId
- 
-  getMerchantId.then((merchant) => {
-    if(merchant.length === 0) {
+    let getMerchantId = await Merchant.findOne({
+      where: { merchant_name: merchantName }
+    })
+    if(getMerchantId !== null) {
+      let merchantId = getMerchantId.merchant_id
+  
+      let getMerchantContacts = await MerchantContact.findAll({
+        where: { merchant_id: merchantId }
+      })
+  
+      let merchantContacts = []
+  
+      if(getMerchantContacts.length > 0) {
+        getMerchantContacts.forEach((contact) => {
+          merchantContacts.push({
+            name: contact.merchant_contact_name,
+            email: contact.merchant_contact_email
+          })
+        })
+
+        jsonRes = {
+          statusCode: 200,
+          success: true,
+          result: merchantContacts
+        };
+      } else {
+        jsonRes = {
+          statusCode: 200,
+          success: true,
+          result: null
+        };
+      }
+    } else {
       jsonRes = {
         statusCode: 200,
         success: true,
-        result: null,
         message: 'Invalid merchant name'
       };
-    } else {
-      merchantId = merchant[0].merchant_id
     }
-  }).catch((error) => {
-    console.log(error);
-    // logger.error(error);
+  } catch(error) {
+    console.log(error)
 
     jsonRes = {
       errors: [{
@@ -134,48 +190,9 @@ merchant.getMerchantContacts = (req, res) => {
       }],
       statusCode: 500
     };
-
-  }).finally(() => {
-      query = `SELECT merchant_contact_name, merchant_contact_email FROM merchant_contacts WHERE merchant_id = "${merchantId}"`
-      let getMerchantContacts = mysqlDbHelper.execute(query)
-
-      let merchantContacts = []
-
-      getMerchantContacts.then((contacts) => {
-        if(contacts.length > 0) {
-          contacts.forEach((contact) => { 
-            merchantContacts.push({
-              name: contact.merchant_contact_name,
-              email: contact.merchant_contact_email
-            })
-          })
-
-          jsonRes = {
-            statusCode: 200,
-            success: true,
-            result: merchantContacts
-          };
-        } else {
-          jsonRes = {
-            statusCode: 200,
-            success: true,
-            result: null
-          };
-        }
-      }).catch((error) => {
-        console.log(error)
-
-        jsonRes = {
-          errors: [{
-            code: 500,
-            message: error,
-          }],
-          statusCode: 500
-        };
-      }).finally(() => {
-        util.sendResponse(res, jsonRes);
-      })
-  });
+  }
+  
+  util.sendResponse(res, jsonRes);
 };
 
 module.exports = merchant;

@@ -15,8 +15,8 @@ const swaggerUi = require('swagger-ui-express');
 const node_env = config.app.node_env || 'development';
 
 const errorHandler = require('./middlewares/error-handler')
-const mysqlDbHelper=require('./helpers/mysql-db-helper');
 const routes = require('./components');
+const sequelize = require('./helpers/mysql-db-helper');
 
 const app = express();
 
@@ -107,16 +107,14 @@ app.use(errorHandler.catchNotFound);
 app.use(errorHandler.handleError);
 
 /**
- * Connect to database
+ * Connect to database using sequelize
  */
-let mysqlConnect = mysqlDbHelper.connect();
-mysqlConnect.then((connect) => {
-	// logger.info(`Database connected: ${JSON.stringify(connect)}`)
-	console.log(`Database connected: ${JSON.stringify(connect)}`)
-}).catch((error) => {
-	// logger.error(`Database connection error: ${error}`)
-	console.log(`Database connection error: ${error}`)
-});  
+sequelize.authenticate()
+	.then(() => {
+		console.log('Connection has been established successfully.')
+	}).catch((error) => {
+		console.error('Unable to connect to the database:', error)
+	})
 
 /**
  * Start server
