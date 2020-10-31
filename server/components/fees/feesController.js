@@ -284,7 +284,8 @@ fees.getByCourierDistance = (req, res) => {
       jsonRes = {
         statusCode: 200,
         success: true,
-        result: null
+        result: null,
+        message: 'Location data is unavailable'
       };
     }
   }).catch((error) => {
