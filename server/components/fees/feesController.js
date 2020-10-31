@@ -14,8 +14,9 @@ const fees = {};
 /**
  * Get delivery fee according to distance
  */ 
-fees.getByDistance = (req, res) => {
+fees.getByDistance = async (req, res) => {
   // logger.debug('inside getByDistance()...');
+  console.log('inside getByDistance()...');
 
   let jsonRes;
 
@@ -30,66 +31,91 @@ fees.getByDistance = (req, res) => {
   let one = locationFrom[1] + ', ' + locationFrom[0]
   let two = locationTo[1] + ', ' + locationTo[0]
 
-  const query = `SELECT direct_distance FROM rinconadaDD WHERE one = "${one}" AND two = "${two}"`
+  const query = `SELECT driving_distance, direct_distance FROM rinconadaDD WHERE one = "${one}" AND two = "${two}"`
 
-  let getDirectDistance = mysqlDbHelper.execute(query)
-  let directDistance;
+  let getDrivingDistance = mysqlDbHelper.execute(query)
+  let drivingDistance;
+  let directDistance
 
-  getDirectDistance.then((distance) => {
+  getDrivingDistance.then((distance) => {
     if(distance.length > 0 || one === two) {
-      if(one === two) directDistance = 0
-      else directDistance = Math.round(distance[0].direct_distance)
-
-      let deliveryFee;
-
-      switch(true) {
-        case(directDistance >= 0 && directDistance <= 1):
-          deliveryFee = 30
-          break
-        case(directDistance >= 2 && directDistance <= 3):
-          deliveryFee = 45
-          break
-        case(directDistance >= 4 && directDistance <= 5):
-          deliveryFee = 59
-          break
-        case(directDistance == 6):
-          deliveryFee = 65
-          break
-        case(directDistance == 7):
-          deliveryFee = 69
-          break
-        case(directDistance == 8):
-          deliveryFee = 79
-          break
-        case(directDistance == 9):
-          deliveryFee = 89
-          break
-        case(directDistance == 10):
-          deliveryFee = 110
-          break
-        case(directDistance >= 11 && directDistance <= 15):
-          deliveryFee = 150
-          break
-        case(directDistance >= 16 && directDistance <= 20):
-          deliveryFee = 200
-          break
-        default:
-          break
-      }
-
-      jsonRes = {
-        statusCode: 200,
-        success: true,
-        result: {
-          deliveryFee: deliveryFee
+      if(one === two) {
+        jsonRes = {
+          statusCode: 200,
+          success: true,
+          result: {
+            deliveryFee: 30
+          }
+        };
+      } else if(distance[0].driving_distance === 0) {
+        directDistance = distance[0].direct_distance * 1.5
+        
+        if(Math.round(directDistance) > 20) {
+          jsonRes = {
+            statusCode: 200,
+            success: true,
+            result: null,
+            message: 'Unable to get delivery fee. Area Unserviceable'
+          }
+        } else {
+          drivingDistance = Math.round(directDistance)
         }
-      };
+      } else {
+        drivingDistance = Math.round(distance[0].driving_distance)
+      }
+      
+      if(drivingDistance) {
+        let deliveryFee;
 
+        switch(true) {
+          case(drivingDistance >= 0 && drivingDistance <= 1):
+            deliveryFee = 30
+            break
+          case(drivingDistance >= 2 && drivingDistance <= 3):
+            deliveryFee = 45
+            break
+          case(drivingDistance >= 4 && drivingDistance <= 5):
+            deliveryFee = 59
+            break
+          case(drivingDistance == 6):
+            deliveryFee = 65
+            break
+          case(drivingDistance == 7):
+            deliveryFee = 69
+            break
+          case(drivingDistance == 8):
+            deliveryFee = 79
+            break
+          case(drivingDistance == 9):
+            deliveryFee = 89
+            break
+          case(drivingDistance == 10):
+            deliveryFee = 110
+            break
+          case(drivingDistance >= 11 && drivingDistance <= 15):
+            deliveryFee = 150
+            break
+          case(drivingDistance >= 16 && drivingDistance <= 20):
+            deliveryFee = 200
+            break
+          default:
+            break
+        }
+        
+        jsonRes = {
+          statusCode: 200,
+          success: true,
+          result: {
+            deliveryFee: deliveryFee
+          }
+        };
+      }
     } else {
       jsonRes = {
         statusCode: 200,
         success: true,
-        result: null
+        result: null,
+        message: 'Location data is unavailable'
       };
     }
   }).catch((error) => {
@@ -215,28 +241,45 @@ fees.getByCourierDistance = (req, res) => {
   let one = pickUp[1] + ', ' + pickUp[0]
   let two = dropOff[1] + ', ' + dropOff[0]
   
-  const query = `SELECT direct_distance FROM rinconadaDD WHERE one = "${one}" AND two = "${two}"`
+  const query = `SELECT driving_distance, direct_distance FROM rinconadaDD WHERE one = "${one}" AND two = "${two}"`
   
-  let getDirectDistance = mysqlDbHelper.execute(query)
-  let directDistance;
+  let getDrivingDistance = mysqlDbHelper.execute(query)
+  let drivingDistance;
 
-  getDirectDistance.then((distance) => {
+  getDrivingDistance.then((distance) => {
     if(distance.length > 0 || one === two) {
-      if(one === two) directDistance = 1
-      else directDistance = Math.round(distance[0].direct_distance)
-      
-      if(directDistance === 0) directDistance++
-
-      const deliveryFee = baseFare + (directDistance - 1) * afterBaseFare;
-
-      jsonRes = {
-        statusCode: 200,
-        success: true,
-        result: {
-          deliveryFee: deliveryFee
+      if(one === two) {
+        drivingDistance = 1
+      } else if(distance.length > 0 && distance[0].driving_distance === 0) {
+        directDistance = distance[0].direct_distance * 1.5 
+        
+        if(directDistance > 30) {
+          jsonRes = {
+            statusCode: 200,
+            success: true,
+            result: null,
+            message: 'Unable to get delivery fee. Area Unserviceable'
+          }
+        } else {
+          drivingDistance = Math.round(directDistance)
         }
-      };
+      } else {
+        drivingDistance = Math.round(distance[0].driving_distance)
+      }
+
+      if(drivingDistance === 0) drivingDistance++
       
+      if(drivingDistance) {
+        const deliveryFee = baseFare + ((drivingDistance - 1) * afterBaseFare);
+
+        jsonRes = {
+          statusCode: 200,
+          success: true,
+          result: {
+            deliveryFee: deliveryFee
+          }
+        };
+      }
     } else {
       jsonRes = {
         statusCode: 200,
