@@ -12,7 +12,7 @@ const userEnrollment = require('./user-enrollment');
 const accessToken = require('./access-token');
 const deliveryFee = require('./fees');
 const merchant = require('./merchant');
-
+const order = require('./order')
 const router = express.Router();
 
 /**
@@ -37,6 +37,7 @@ router.use('/token',accessToken);
 router.use(authHandler.authenticateUser);
 router.use('/fees', deliveryFee);
 router.use('/merchant', merchant);
+router.use('/order', order)
 
 
 
