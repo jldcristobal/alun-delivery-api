@@ -1,7 +1,4 @@
 // const log4js = require('log4js');
-const config = require('config');
-const { result } = require('lodash');
-const { Logger } = require('log4js');
 
 const mysqlDbHelper = require('../../helpers/mysql-db-helper')
 const util = require('../../helpers/util')
