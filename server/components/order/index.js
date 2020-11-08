@@ -21,5 +21,6 @@ console.log('routes - user-enrollment');
 router.post("/add", orderController.addOrder)
 router.post("/retrieve", orderController.getOrder)
 router.post("/update", orderController.updateOrder)
+//router.post("/status", orderController.getOrderStatus)
 
 module.exports = router;

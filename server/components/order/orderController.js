@@ -3,6 +3,7 @@
 //const { result } = require('lodash');
 //const { Logger } = require('log4js');
 
+const axios = require('axios')
 const mysqlDbHelper = require('../../helpers/mysql-db-helper')
 const util = require('../../helpers/util')
 
@@ -15,16 +16,28 @@ console.log('controllers - userEnrollment')
  */
 const order = {}
 
+const isOrderConfirmed = async (orderUuid) => {
+   const query = `SELECT order_confirmed, merchant_contacts FROM orders WHERE order_uuid = '${orderUuid}'`
+
+   try {
+      const status = await mysqlDbHelper.execute(query)
+      //console.log(status[0])
+      return status[0]
+   } catch (err) {
+      console.log({err})
+   }
+}
+
 /**
  * Add order
  */
 order.addOrder = async (req, res) => {
 
    let jsonRes
-   const { orderUuid, orderNumber, orderCart, merchantName, orderPlatform } = req.body
+   const { orderUuid, orderNumber, orderCart, merchantName, orderPlatform, merchantContacts } = req.body
 
-   const query = `INSERT INTO orders (order_uuid, order_number, order_cart, merchant_name, order_platform) 
-      VALUES ('${orderUuid}', '${orderNumber}', '${orderCart}', '${merchantName}', '${orderPlatform}')`
+   const query = `INSERT INTO orders (order_uuid, order_number, order_cart, merchant_name, order_platform, merchant_contacts) 
+      VALUES ('${orderUuid}', '${orderNumber}', '${orderCart}', '${merchantName}', '${orderPlatform}', '${merchantContacts}')`
 
    let addOrder = mysqlDbHelper.execute(query)
 
@@ -44,7 +57,43 @@ order.addOrder = async (req, res) => {
       }
    }).finally(() => {
       util.sendResponse(res, jsonRes)
+      order.followUp(orderUuid)
    })
+}
+
+order.followUp = (orderUuid) => {
+   setTimeout(async () => {
+      try {
+         const { order_confirmed, merchant_contacts } = await isOrderConfirmed(orderUuid)
+         const contactIds = merchant_contacts.split(",")
+         if (!order_confirmed) {
+            console.log("Order not confirmed")
+            contactIds.forEach(async (id) => {
+               try {
+                  let response = await axios.post("https://api.manychat.com/fb/sending/sendFlow", {
+                     subscriber_id: id,
+                     flow_ns: "content20201031171458_452545"
+                  }, {
+                     headers: {
+                        Authorization: "Bearer 100516578360856:fb0c5a25cb34417b2a0c8ec26fd922c5"
+                     }
+                  })
+                  if (response.data.status == "success") {
+                     console.log("User redirected to prompt flow")
+                  } else {
+                     console.log("User not redirected to prompt flow")
+                  }
+               } catch (e) {
+                  console.log(e)
+               }
+            })
+         } else {
+            console.log("Order already confirmed!")
+         }
+      } catch (err) {
+         console.log("Error: ", err)
+      }
+   }, 20000)
 }
 
 /**
