@@ -1,4 +1,7 @@
 // const log4js = require('log4js');
+//const config = require('config');
+//const { result } = require('lodash');
+//const { Logger } = require('log4js');
 
 const mysqlDbHelper = require('../../helpers/mysql-db-helper')
 const util = require('../../helpers/util')
@@ -21,7 +24,7 @@ order.addOrder = async (req, res) => {
    const { orderUuid, orderNumber, orderCart, merchantName, orderPlatform } = req.body
 
    const query = `INSERT INTO orders (order_uuid, order_number, order_cart, merchant_name, order_platform) 
-      VALUES ('${orderUuid}', '${orderNumber}', '${JSON.stringify(orderCart)}', '${merchantName}', '${orderPlatform}')`
+      VALUES ('${orderUuid}', '${orderNumber}', '${orderCart}', '${merchantName}', '${orderPlatform}')`
 
    let addOrder = mysqlDbHelper.execute(query)
 
@@ -126,7 +129,7 @@ order.getOrder = async (req, res) => {
                   value: merchant_name
                }
             ],
-            "quick_replies": []
+            quick_replies: []
          }
       }
    }).catch((error) => {
@@ -148,22 +151,51 @@ order.getOrder = async (req, res) => {
 order.updateOrder = async (req, res) => {
 
    let jsonRes
-   const { orderUuid, updateType } = req.body
+   const { orderUuid, orderNumber, updateType } = req.body
    const query = `UPDATE orders SET order_confirmed = ${1} WHERE order_uuid = "${orderUuid}"`
-
-   if (updateType === "confirm") {
-      console.log("Send Order Confirmation flow")
-   } else {
-      console.log("Send Order Feedback flow")
-   }
 
    let getOrder = mysqlDbHelper.execute(query)
 
    getOrder.then(() => { 
-      jsonRes = {
+      /*jsonRes = {
          statusCode: 200,
          success: true,
          message: "Order updated successfully"
+      }*/
+      if (updateType === "confirm") {
+         jsonRes = {
+            statusCode: 200,
+            version: "v2",
+            content: {
+               messages: [
+                  {
+                     type: "text",
+                     text: `👋 Got it {{first_name}}! Thank you for confirming 📋 Order No. ${orderNumber}`,
+                     buttons: []
+                  }
+               ],
+               actions: [],
+               quick_replies: []
+            }
+         }
+         console.log("Send Confirm Order flow")
+      } else {
+         jsonRes = {
+            statusCode: 200,
+            version: "v2",
+            content: {
+               messages: [
+                  {
+                     type: "text",
+                     text: `👋 No worries {{first_name}}! Please tell us which items are not available on 📋 Order No. ${orderNumber}`,
+                     buttons: []
+                  }
+               ],
+               actions: [],
+               quick_replies: []
+            }
+         }
+         console.log("Send Order Feedback flow")
       }
    }).catch((error) => {
       console.log(error)
