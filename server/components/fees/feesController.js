@@ -115,7 +115,7 @@ fees.getByDistance = async (req, res) => {
         statusCode: 200,
         success: true,
         result: null,
-        message: 'Location data is unavailable'
+        message: 'Unable to get delivery fee. Location data is unavailable'
       };
     }
   }).catch((error) => {
@@ -285,7 +285,7 @@ fees.getByCourierDistance = (req, res) => {
         statusCode: 200,
         success: true,
         result: null,
-        message: 'Location data is unavailable'
+        message: 'Unable to get delivery fee. Location data is unavailable'
       };
     }
   }).catch((error) => {
