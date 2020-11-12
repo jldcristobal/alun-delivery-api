@@ -147,8 +147,8 @@ order.followUp = (orderUuid) => {
       } catch (err) {
          console.log("Error: ", err)
       }
+      order.finalPrompt(orderUuid)
    }, config.followUpWindow)
-   order.finalPrompt(orderUuid)
 }
 
 /*
@@ -204,7 +204,7 @@ order.updateOrder = async (req, res) => {
          console.log("Order already confirmed by", confirmed_by)
          let message = ""
          if (currentUser == confirmed_by) {
-            message = `👍🏼 You have already attended to Order No. ${orderNumber}. Just stand by for future orders! 👌🏻`
+            message = `👍🏼 You have already attended to Order No. ${orderNumber}. Just stand by for the next orders! 👌🏻`
          } else {
             message = `👍🏼 Order No. ${orderNumber} has already been attended by ${confirmed_by}. Just stand by for future orders! 👌🏻`
          }
