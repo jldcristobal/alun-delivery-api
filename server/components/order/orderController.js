@@ -81,8 +81,8 @@ order.followUp = (orderUuid) => {
                            messages: [
                               {
                                  type: "text",
-                                 text: `⚡ {{first_name}}, Order No. ${order_number} is still pending. Please use the buttons in the previous message to confirm ✅ or send feedback 💬 regarding this order. \n\nOtherwise, a member of our team will call you after two minutes to manually follow up on the order. Thanks! 😊`,
-                                 buttons: [/*
+                                 text: `⚡ {{first_name}}, Order No. ${order_number} is still pending. Please use the buttons in the previous message to confirm ✅ or send feedback 💬 regarding this order. \n\nOtherwise, a member of our team will call you after 2 minutes to manually follow up on the order. Thanks! 😊`,
+                                 buttons: [
                                     {
                                        type: "dynamic_block_callback",
                                        caption: `Confirm order ✅`,
@@ -117,10 +117,16 @@ order.followUp = (orderUuid) => {
                                           confirmedBy: "{{first_name}}"
                                        }
                                     }
-                                 */]
+                                 ]
                               }
                            ],
-                           actions: [],
+                           actions: [
+                              {
+                                 action: "set_field_value",
+                                 field_name: "accessToken",
+                                 value: "{{accessToken}}"
+                              }
+                           ],
                            quick_replies: []
                         }
                      },
@@ -204,9 +210,9 @@ order.updateOrder = async (req, res) => {
          console.log("Order already confirmed by", confirmed_by)
          let message = ""
          if (currentUser == confirmed_by) {
-            message = `👍🏼 You have already attended to Order No. ${orderNumber}. Just stand by for the next orders! 👌🏻`
+            message = `👍🏼 {{first_name}}, you have already attended to Order No. ${orderNumber}. Just stand by for the next orders! 🌊`
          } else {
-            message = `👍🏼 Order No. ${orderNumber} has already been attended by ${confirmed_by}. Just stand by for future orders! 👌🏻`
+            message = `👍🏼 Order No. ${orderNumber} has already been attended by ${confirmed_by}. Just stand by for the next orders, {{first_name}}! 🌊`
          }
          jsonRes = {
             statusCode: 200,
@@ -241,7 +247,13 @@ order.updateOrder = async (req, res) => {
                            buttons: []
                         }
                      ],
-                     actions: [],
+                     actions: [
+                        {
+                           action: "set_field_value",
+                           field_name: "OrderNumber",
+                           value: orderNumber
+                        }
+                     ],
                      quick_replies: []
                   }
                }
@@ -276,7 +288,13 @@ order.updateOrder = async (req, res) => {
                            buttons: []
                         }
                      ],
-                     actions: [],
+                     actions: [
+                        {
+                           action: "set_field_value",
+                           field_name: "OrderNumber",
+                           value: orderNumber
+                        }
+                     ],
                      quick_replies: []
                   }
                }
