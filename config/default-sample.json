@@ -12,5 +12,7 @@
       "name": ""
   },
   "tokenSecret":"",
-  "tokenExpriryTime":
+  "tokenExpriryTime": 0,
+  "followUpWindow": 0,
+  "MANYCHAT_API_KEY": ""
 }

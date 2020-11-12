@@ -1,5 +1,5 @@
 // const log4js = require('log4js');
-//const config = require('config');
+const config = require('config')
 //const { result } = require('lodash');
 //const { Logger } = require('log4js');
 
@@ -17,7 +17,7 @@ console.log('controllers - userEnrollment')
 const order = {}
 
 const isOrderConfirmed = async (orderUuid) => {
-   const query = `SELECT order_confirmed, merchant_contacts FROM orders WHERE order_uuid = '${orderUuid}'`
+   const query = `SELECT * FROM orders WHERE order_uuid = '${orderUuid}'`
 
    try {
       const status = await mysqlDbHelper.execute(query)
@@ -64,36 +64,82 @@ order.addOrder = async (req, res) => {
 order.followUp = (orderUuid) => {
    setTimeout(async () => {
       try {
-         const { order_confirmed, merchant_contacts } = await isOrderConfirmed(orderUuid)
+         const { order_uuid, order_confirmed, order_number, merchant_contacts } = await isOrderConfirmed(orderUuid)
          const contactIds = merchant_contacts.split(",")
          if (!order_confirmed) {
             console.log("Order not confirmed")
             contactIds.forEach(async (id) => {
                try {
-                  let response = await axios.post("https://api.manychat.com/fb/sending/sendFlow", {
+                  let response = await axios.post("https://api.manychat.com/fb/sending/sendContent", {
                      subscriber_id: id,
-                     flow_ns: "content20201031171458_452545"
+                     data: {
+                        version: "v2",
+                        content: {
+                           messages: [
+                              {
+                                 type: "text",
+                                 text: `{{first_name}}, please use the buttons below to confirm or send feedback regarding 📋 Order No. ${order_number} \n\nOtherwise, a member of our team will call you after two minutes to manually follow up on the order. Thanks! 😊`,
+                                 buttons: [
+                                    {
+                                       type: "dynamic_block_callback",
+                                       caption: `Confirm order ✅`,
+                                       url: "https://dev-api.alun.app/api/order/update",
+                                       method: "post",
+                                       headers: {
+                                          Authorization: `Bearer {{accessToken}}`
+                                       },
+                                       payload: {
+                                          orderUuid: order_uuid,
+                                          orderNumber: order_number,
+                                          updateType: "confirm",
+                                          confirmerId: "{{id}}"
+                                       }
+                                    },
+                                    {
+                                       type: "dynamic_block_callback",
+                                       caption: "Send feedback 💬",
+                                       url: "https://dev-api.alun.app/api/order/update",
+                                       method: "post",
+                                       headers: {
+                                          Authorization: `Bearer {{accessToken}}`
+                                       },
+                                       payload: {
+                                          orderUuid: order_uuid,
+                                          orderNumber: order_number,
+                                          updateType: "feedback",
+                                          confirmerId: "{{id}}"
+                                       }
+                                    }
+                                 ]
+                              }
+                           ],
+                           actions: [],
+                           quick_replies: []
+                        }
+                     },
+                     message_tag: "POST_PURCHASE_UPDATE"
                   }, {
                      headers: {
-                        Authorization: "Bearer 100516578360856:fb0c5a25cb34417b2a0c8ec26fd922c5"
+                        Authorization: `Bearer ${config.MANYCHAT_API_KEY}`
                      }
                   })
+
                   if (response.data.status == "success") {
-                     console.log("User redirected to prompt flow")
+                     console.log("Message sent!")
                   } else {
-                     console.log("User not redirected to prompt flow")
+                     console.log("Message not sent!")
                   }
                } catch (e) {
                   console.log(e)
                }
             })
          } else {
-            console.log("Order already confirmed!")
+            console.log("Order already confirmed! No need to follow up!")
          }
       } catch (err) {
          console.log("Error: ", err)
       }
-   }, 20000)
+   }, config.followUpWindow)
 }
 
 /**
@@ -200,12 +246,12 @@ order.getOrder = async (req, res) => {
 order.updateOrder = async (req, res) => {
 
    let jsonRes
-   const { orderUuid, orderNumber, updateType } = req.body
+   const { orderUuid, orderNumber, updateType, confirmerId } = req.body
    const query = `UPDATE orders SET order_confirmed = ${1} WHERE order_uuid = "${orderUuid}"`
 
    let getOrder = mysqlDbHelper.execute(query)
 
-   getOrder.then(() => { 
+   getOrder.then(async () => { 
       /*jsonRes = {
          statusCode: 200,
          success: true,
@@ -219,7 +265,7 @@ order.updateOrder = async (req, res) => {
                messages: [
                   {
                      type: "text",
-                     text: `👋 Got it {{first_name}}! Thank you for confirming 📋 Order No. ${orderNumber}`,
+                     text: `Awesome, {{first_name}}! 🤗 You have confirmed 📋 Order No. ${orderNumber}`,
                      buttons: []
                   }
                ],
@@ -227,7 +273,25 @@ order.updateOrder = async (req, res) => {
                quick_replies: []
             }
          }
-         console.log("Send Confirm Order flow")
+         console.log("Send Accept Order flow")
+
+         try {
+            let response = await axios.post("https://api.manychat.com/fb/sending/sendFlow", {
+               subscriber_id: confirmerId,
+               flow_ns: "content20201019151906_485264" // Accept Order
+            }, {
+               headers: {
+                  Authorization: `Bearer ${config.MANYCHAT_API_KEY}`
+               }
+            })
+            if (response.data.status == "success") {
+               console.log("User redirected to Accept Order flow")
+            } else {
+               console.log("User not redirected to Accept Order flow")
+            }
+         } catch (e) {
+            console.log(e)
+         }
       } else {
          jsonRes = {
             statusCode: 200,
@@ -236,7 +300,7 @@ order.updateOrder = async (req, res) => {
                messages: [
                   {
                      type: "text",
-                     text: `👋 No worries {{first_name}}! Please tell us which items are not available on 📋 Order No. ${orderNumber}`,
+                     text: `No worries {{first_name}}! Please tell us which items are not available on 📋 Order No. ${orderNumber}`,
                      buttons: []
                   }
                ],
@@ -245,6 +309,23 @@ order.updateOrder = async (req, res) => {
             }
          }
          console.log("Send Order Feedback flow")
+         try {
+            let response = await axios.post("https://api.manychat.com/fb/sending/sendFlow", {
+               subscriber_id: confirmerId,
+               flow_ns: "content20201019152011_509316" // Order Feedback
+            }, {
+               headers: {
+                  Authorization: `Bearer ${config.MANYCHAT_API_KEY}`
+               }
+            })
+            if (response.data.status == "success") {
+               console.log("User redirected to Order Feedback flow")
+            } else {
+               console.log("User not redirected to order Feedback flow")
+            }
+         } catch (e) {
+            console.log(e)
+         }
       }
    }).catch((error) => {
       console.log(error)
