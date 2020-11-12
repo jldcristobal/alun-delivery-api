@@ -81,8 +81,8 @@ order.followUp = (orderUuid) => {
                            messages: [
                               {
                                  type: "text",
-                                 text: `⚡ {{first_name}}, Order No. ${order_number} is still pending. Please use the buttons below to confirm or send feedback regarding this order. \n\nOtherwise, a member of our team will call you after two minutes to manually follow up on the order. Thanks! 😊`,
-                                 buttons: [
+                                 text: `⚡ {{first_name}}, Order No. ${order_number} is still pending. Please use the buttons in the previous message to confirm ✅ or send feedback 💬 regarding this order. \n\nOtherwise, a member of our team will call you after two minutes to manually follow up on the order. Thanks! 😊`,
+                                 buttons: [/*
                                     {
                                        type: "dynamic_block_callback",
                                        caption: `Confirm order ✅`,
@@ -117,7 +117,7 @@ order.followUp = (orderUuid) => {
                                           confirmedBy: "{{first_name}}"
                                        }
                                     }
-                                 ]
+                                 */]
                               }
                            ],
                            actions: [],
@@ -133,7 +133,7 @@ order.followUp = (orderUuid) => {
 
                   if (response.data.status == "success") {
                      console.log("Message sent!")
-                     order.finalPrompt(orderUuid)
+                     
                   } else {
                      console.log("Message not sent!")
                   }
@@ -148,6 +148,7 @@ order.followUp = (orderUuid) => {
          console.log("Error: ", err)
       }
    }, config.followUpWindow)
+   order.finalPrompt(orderUuid)
 }
 
 /*
@@ -222,6 +223,7 @@ order.updateOrder = async (req, res) => {
                quick_replies: []
             }
          }
+         util.sendResponse(res, jsonRes)
       } else {
          const query = `UPDATE orders SET order_confirmed = ${1}, confirmed_by = "${confirmedBy}" WHERE order_uuid = "${orderUuid}"`
          let getOrder = mysqlDbHelper.execute(query)
