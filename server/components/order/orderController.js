@@ -151,7 +151,7 @@ order.followUp = (orderUuid, accessToken) => {
    }, config.followUpWindow)
 }
 
-/*order.test = async (req, res) => {
+order.test = async (req, res) => {
    let jsonRes = {
       statusCode: 200,
       success: true,
@@ -161,7 +161,7 @@ order.followUp = (orderUuid, accessToken) => {
    order.finalPrompt(req.body.orderUuid)
 
    util.sendResponse(res, jsonRes)
-}*/
+}
 
 /*
  * Automatic follow up
@@ -176,16 +176,7 @@ order.finalPrompt = (orderUuid) => {
             console.log("Order still not confirmed!")
             contactIds.forEach(async (id) => {
                try {
-                  let sendFlow = axios.post("https://api.manychat.com/fb/sending/sendFlow", {
-                     subscriber_id: id,
-                     flow_ns: "content20201031171458_452545" // Order Prompt - Unconfirmed Order
-                  }, {
-                     headers: {
-                        Authorization: `Bearer ${config.MANYCHAT_API_KEY}`
-                     }
-                  })
-
-                  let sendMessage = axios.post("https://api.manychat.com/fb/sending/sendContent", {
+                  const sendMessage = await axios.post("https://api.manychat.com/fb/sending/sendContent", {
                      subscriber_id: id,
                      data: {
                         version: "v2",
@@ -214,17 +205,24 @@ order.finalPrompt = (orderUuid) => {
                      }
                   })
 
-                  let response = await axios.all([sendMessage, sendFlow])
-                  if (response[0].data.status == "success") {
+                  if (sendMessage.data.status == "success") {
                      console.log(`Final prompt message SENT for Order No. ${order_number}`)
+                     const sendFlow = await axios.post("https://api.manychat.com/fb/sending/sendFlow", {
+                        subscriber_id: id,
+                        flow_ns: "content20201031171458_452545" // Order Prompt - Unconfirmed Order
+                     }, {
+                        headers: {
+                           Authorization: `Bearer ${config.MANYCHAT_API_KEY}`
+                        }
+                     })
+
+                     if (sendFlow.data.status == "success") {
+                        console.log(`User redirected to Unconfirmed Order flow`)
+                     } else {
+                        console.log(`User not redirected to Unconfirmed Order flow`)
+                     }
                   } else {
                      console.log(`Final prompt message NOT SENT for Order No. ${order_number}`)
-                  }
-
-                  if (response[1].data.status == "success") {
-                     console.log(`User redirected to Unconfirmed Order flow`)
-                  } else {
-                     console.log(`User not redirected to Unconfirmed Order flow`)
                   }
                } catch (e) {
                   console.log(e)
