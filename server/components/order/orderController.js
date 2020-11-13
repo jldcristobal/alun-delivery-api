@@ -201,7 +201,7 @@ order.finalPrompt = (orderUuid) => {
                               {
                                  action: "set_field_value",
                                  field_name: "OrderNumber",
-                                 value: orderNumber
+                                 value: order_number
                               }
                            ],
                            quick_replies: []
@@ -327,7 +327,7 @@ order.updateOrder = async (req, res) => {
                      messages: [
                         {
                            type: "text",
-                           text: `No worries {{first_name}}! Please tell us which items or ingredients are not available for 📋 Order No. ${orderNumber}`,
+                           text: `No worries {{first_name}}! 😄 Please tell us which items or ingredients are not available for 📋 Order No. ${orderNumber}`,
                            buttons: []
                         }
                      ],
