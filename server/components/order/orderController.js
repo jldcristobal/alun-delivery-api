@@ -33,7 +33,7 @@ const getOrderDetails = async (orderUuid) => {
 order.addOrder = async (req, res) => {
 
    let jsonRes
-   const { orderUuid, orderNumber, orderCart, merchantName, orderPlatform, merchantContacts } = req.body
+   const { orderUuid, orderNumber, orderCart, merchantName, orderPlatform, merchantContacts, accessToken } = req.body
 
    const query = `INSERT INTO orders (order_uuid, order_number, order_cart, merchant_name, order_platform, merchant_contacts) 
       VALUES ('${orderUuid}', '${orderNumber}', '${orderCart}', '${merchantName}', '${orderPlatform}', '${merchantContacts}')`
@@ -56,7 +56,7 @@ order.addOrder = async (req, res) => {
       }
    }).finally(() => {
       util.sendResponse(res, jsonRes)
-      order.followUp(orderUuid)
+      order.followUp(orderUuid, accessToken)
    })
 }
 
@@ -64,7 +64,7 @@ order.addOrder = async (req, res) => {
  * Automatic follow up
  * Send message reminder if order has not been responded within the follow up window
  */
-order.followUp = (orderUuid) => {
+order.followUp = (orderUuid, accessToken) => {
    setTimeout(async () => {
       try {
          const { order_uuid, order_confirmed, order_number, merchant_contacts } = await getOrderDetails(orderUuid)
@@ -81,15 +81,15 @@ order.followUp = (orderUuid) => {
                            messages: [
                               {
                                  type: "text",
-                                 text: `⚡ {{first_name}}, Order No. ${order_number} is still pending. Please use the buttons in the previous message to confirm ✅ or send feedback 💬 regarding this order. \n\nOtherwise, a member of our team will call you after 2 minutes to manually follow up on the order. Thanks! 😊`,
+                                 text: `⚡ {{first_name}}, Order No. ${order_number} is still pending. Please use the buttons provided below to confirm ✅ or send feedback 💬 regarding this order. \n\nOtherwise, a member of our team will call you after 2 minutes to manually follow up on the order. Thanks! 😊`,
                                  buttons: [
                                     {
                                        type: "dynamic_block_callback",
-                                       caption: `Confirm order ✅`,
+                                       caption: `Confirm ORD#${order_number} ✅`,
                                        url: "https://dev-api.alun.app/api/order/update",
                                        method: "post",
                                        headers: {
-                                          Authorization: `Bearer {{accessToken}}`
+                                          Authorization: `Bearer ${accessToken}`
                                        },
                                        payload: {
                                           orderUuid: order_uuid,
@@ -106,7 +106,7 @@ order.followUp = (orderUuid) => {
                                        url: "https://dev-api.alun.app/api/order/update",
                                        method: "post",
                                        headers: {
-                                          Authorization: `Bearer {{accessToken}}`
+                                          Authorization: `Bearer ${accessToken}`
                                        },
                                        payload: {
                                           orderUuid: order_uuid,
@@ -120,13 +120,7 @@ order.followUp = (orderUuid) => {
                                  ]
                               }
                            ],
-                           actions: [
-                              {
-                                 action: "set_field_value",
-                                 field_name: "accessToken",
-                                 value: "{{accessToken}}"
-                              }
-                           ],
+                           actions: [],
                            quick_replies: []
                         }
                      },
@@ -157,6 +151,18 @@ order.followUp = (orderUuid) => {
    }, config.followUpWindow)
 }
 
+/*order.test = async (req, res) => {
+   let jsonRes = {
+      statusCode: 200,
+      success: true,
+      message: "Test success!",
+   }
+
+   order.finalPrompt(req.body.orderUuid)
+
+   util.sendResponse(res, jsonRes)
+}*/
+
 /*
  * Automatic follow up
  * Send final prompt if no response is received after previous message reminder
@@ -170,7 +176,7 @@ order.finalPrompt = (orderUuid) => {
             console.log("Order still not confirmed!")
             contactIds.forEach(async (id) => {
                try {
-                  let response = await axios.post("https://api.manychat.com/fb/sending/sendFlow", {
+                  let sendFlow = axios.post("https://api.manychat.com/fb/sending/sendFlow", {
                      subscriber_id: id,
                      flow_ns: "content20201031171458_452545" // Order Prompt - Unconfirmed Order
                   }, {
@@ -178,10 +184,47 @@ order.finalPrompt = (orderUuid) => {
                         Authorization: `Bearer ${config.MANYCHAT_API_KEY}`
                      }
                   })
-                  if (response.data.status == "success") {
-                     console.log("User redirected to Unconfirmed Order flow")
+
+                  let sendMessage = axios.post("https://api.manychat.com/fb/sending/sendContent", {
+                     subscriber_id: id,
+                     data: {
+                        version: "v2",
+                        content: {
+                           messages: [
+                              {
+                                 type: "text",
+                                 text: `🔔 {{first_name}}, we have not received any response regarding Order No. ${order_number}.`,
+                                 buttons: []
+                              }
+                           ],
+                           actions: [
+                              {
+                                 action: "set_field_value",
+                                 field_name: "OrderNumber",
+                                 value: orderNumber
+                              }
+                           ],
+                           quick_replies: []
+                        }
+                     },
+                     message_tag: "POST_PURCHASE_UPDATE"
+                  }, {
+                     headers: {
+                        Authorization: `Bearer ${config.MANYCHAT_API_KEY}`
+                     }
+                  })
+
+                  let response = await axios.all([sendMessage, sendFlow])
+                  if (response[0].data.status == "success") {
+                     console.log(`Final prompt message SENT for Order No. ${order_number}`)
                   } else {
-                     console.log("User not redirected to Unconfirmed Order flow")
+                     console.log(`Final prompt message NOT SENT for Order No. ${order_number}`)
+                  }
+
+                  if (response[1].data.status == "success") {
+                     console.log(`User redirected to Unconfirmed Order flow`)
+                  } else {
+                     console.log(`User not redirected to Unconfirmed Order flow`)
                   }
                } catch (e) {
                   console.log(e)
