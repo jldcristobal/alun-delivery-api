@@ -19,5 +19,6 @@ const router = express.Router();
  */
 router.post('/distance', feesCtrl.getByDistance);
 router.post('/distance/courier', feesCtrl.getByCourierDistance);
+router.post('/parcel', feesCtrl.getByParcel);
 
 module.exports = router;

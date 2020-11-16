@@ -304,4 +304,63 @@ fees.getByCourierDistance = (req, res) => {
 
 };
 
+/**
+ * Get delivery fee according to parcel
+ */ 
+fees.getByParcel = async (req, res) => {
+  // logger.debug('inside getByParcel()...');
+  console.log('inside getByParcel()...');
+
+  let jsonRes;
+  
+  try {
+    const body = req.body
+    let packaging = body.packaging
+  
+    let deliveryFee
+  
+    switch(packaging) {
+      case 'pouch': 
+        deliveryFee = 39
+        break
+      case 'large':
+        deliveryFee = 89
+        break
+      case 'xl':
+        deliveryFee = 109
+        break
+      case 'own':
+        let weight = body.weight
+        if(weight > 0 && weight <= 5) {
+          deliveryFee = 109
+        } else {
+          weight = Math.ceil(weight - 5)
+          deliveryFee = 109 + (20 * weight)
+        }
+    }
+
+    if(body.express)
+      deliveryFee += 50
+
+    jsonRes = {
+      statusCode: 200,
+      success: true,
+      result: {
+        deliveryFee: deliveryFee
+      }
+    };
+  } catch(error) {
+    jsonRes = {
+      errors: [{
+        code: 500,
+        message: error,
+      }],
+      statusCode: 500
+    };
+  } finally {
+    util.sendResponse(res, jsonRes)
+  }
+
+};
+
 module.exports = fees;
