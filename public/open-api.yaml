@@ -187,6 +187,47 @@ paths:
       security:
       - bearerAuth: []
 
+  "/api/fees/parcel":
+    post:
+      summary: Get delivery fee according to parcel 
+      tags:
+      - Delivery Fee
+      description: For pool delivery
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/definitions/deliveryFeeParcelSource"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+                schema:
+                  type: object
+                  properties:
+                    success:
+                      type: boolean
+                      example: true
+                    result:
+                      type: object
+                      example: {
+                        "deliveryFee": 89
+                      }
+        "500":
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/definitions/ErrorResponse"
+      security:
+      - bearerAuth: []
+  
   "/api/merchant/add":
     post:
       summary: Add merchant 
@@ -373,6 +414,18 @@ definitions:
             "city": "Baao",
             "barangay": "Santa Isabel"
           }
+
+  deliveryFeeParcelSource:
+    properties:
+        packaging:
+          type: string
+          example: "own"
+        weight:
+          type: integer
+          example: 5.01
+        express:
+          type: boolean
+          example: true
 
   addMerchantSource:
     properties:
