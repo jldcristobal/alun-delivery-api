@@ -4,8 +4,8 @@ const config = require('config')
 //const { Logger } = require('log4js');
 
 const axios = require('axios')
-const mysqlDbHelper = require('../../helpers/mysql-db-helper')
 const util = require('../../helpers/util')
+const Orders = require('./orderModel')
 
 // const logger = log4js.getLogger('controllers - userEnrollment');
 // logger.level = config.logLevel;
@@ -16,55 +16,28 @@ console.log('controllers - userEnrollment')
  */
 const order = {}
 
+/*
+ * Fetch order data from database
+ * @param {String} orderUuid: UUID of order to be retrieved
+ */
 const getOrderDetails = async (orderUuid) => {
-   const query = `SELECT * FROM orders WHERE order_uuid = '${orderUuid}'`
-
    try {
-      const status = await mysqlDbHelper.execute(query)
-      return status[0]
+      const order = await Orders.findOne({
+         where: { order_uuid: orderUuid }
+      })
+      return order.dataValues
    } catch (err) {
       console.log({err})
    }
 }
 
-/**
- * Add order
- */
-order.addOrder = async (req, res) => {
-
-   let jsonRes
-   const { orderUuid, orderNumber, orderCart, merchantName, orderPlatform, merchantContacts, accessToken } = req.body
-
-   const query = `INSERT INTO orders (order_uuid, order_number, order_cart, merchant_name, order_platform, merchant_contacts) 
-      VALUES ('${orderUuid}', '${orderNumber}', '${orderCart}', '${merchantName}', '${orderPlatform}', '${merchantContacts}')`
-
-   let addOrder = mysqlDbHelper.execute(query)
-
-   addOrder.then(() => { 
-      jsonRes = {
-        statusCode: 200,
-        success: true,
-        message: "Order added successfully"
-      }
-   }).catch((error) => {
-      console.log(error)
-
-      jsonRes = {
-         statusCode: 500,
-         success: false,
-         message: error,
-      }
-   }).finally(() => {
-      util.sendResponse(res, jsonRes)
-      order.followUp(orderUuid, accessToken)
-   })
-}
-
 /*
  * Automatic follow up
  * Send message reminder if order has not been responded within the follow up window
+ * @param {String} orderUuid: UUID of order to be followed up
+ * @param {String} accessToken: Alun API access token
  */
-order.followUp = (orderUuid, accessToken) => {
+const followUp = (orderUuid, accessToken) => {
    setTimeout(async () => {
       try {
          const { order_uuid, order_confirmed, order_number, merchant_contacts } = await getOrderDetails(orderUuid)
@@ -147,27 +120,16 @@ order.followUp = (orderUuid, accessToken) => {
       } catch (err) {
          console.log("Error: ", err)
       }
-      order.finalPrompt(orderUuid)
+      finalPrompt(orderUuid)
    }, config.followUpWindow)
-}
-
-order.test = async (req, res) => {
-   let jsonRes = {
-      statusCode: 200,
-      success: true,
-      message: "Test success!",
-   }
-
-   order.finalPrompt(req.body.orderUuid)
-
-   util.sendResponse(res, jsonRes)
 }
 
 /*
  * Automatic follow up
  * Send final prompt if no response is received after previous message reminder
+ * @param {String} orderUuid: UUID of order to be followed up
  */
-order.finalPrompt = (orderUuid) => {
+const finalPrompt = (orderUuid) => {
    setTimeout(async () => {
       try {
          const { order_confirmed, order_number, merchant_contacts } = await getOrderDetails(orderUuid)
@@ -237,6 +199,61 @@ order.finalPrompt = (orderUuid) => {
    }, config.followUpWindow)
 }
 
+// ORDER API ENDPOINTS
+
+/**
+ * Add order
+ */
+order.addOrder = async (req, res) => {
+
+   let jsonRes
+   const { orderUuid, orderNumber, orderCart, merchantName, orderPlatform, merchantContacts, accessToken } = req.body
+
+   try {
+      await Orders.create({
+         order_uuid: orderUuid,
+         order_number: orderNumber,
+         order_cart: orderCart,
+         merchant_name: merchantName,
+         order_platform: orderPlatform,
+         merchant_contacts: merchantContacts,
+      })
+
+      jsonRes = {
+         statusCode: 200,
+         success: true,
+         message: "Order added successfully"
+       }
+   } catch (err) {
+      console.log(err)
+      jsonRes = {
+         statusCode: 500,
+         success: false,
+         message: "Failed to add order!",
+         errors: err.errors
+      }
+   }
+
+   util.sendResponse(res, jsonRes)
+   followUp(orderUuid, accessToken)
+}
+
+/*
+ * For testing purposes
+ */
+order.test = async (req, res) => {
+   let jsonRes = {
+      statusCode: 200,
+      success: true,
+      message: "Test success!",
+   }
+
+   //finalPrompt(req.body.orderUuid)
+   getOrderDetails(req.body.orderUuid)
+
+   util.sendResponse(res, jsonRes)
+}
+
 /**
  * Update order status
  */
@@ -272,8 +289,12 @@ order.updateOrder = async (req, res) => {
          }
          util.sendResponse(res, jsonRes)
       } else {
-         const query = `UPDATE orders SET order_confirmed = ${1}, confirmed_by = "${confirmedBy}" WHERE order_uuid = "${orderUuid}"`
-         let getOrder = mysqlDbHelper.execute(query)
+         let getOrder = Orders.update({
+            order_confirmed: 1,
+            confirmed_by: confirmedBy
+         }, {
+            where: { order_uuid: orderUuid }
+         })
 
          getOrder.then(async () => { 
             if (updateType === "confirm") {
@@ -360,7 +381,6 @@ order.updateOrder = async (req, res) => {
             }
          }).catch((error) => {
             console.log(error)
-
             jsonRes = {
                statusCode: 500,
                success: false,
