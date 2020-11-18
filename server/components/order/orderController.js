@@ -396,3 +396,4 @@ order.updateOrder = async (req, res) => {
 }
 
 module.exports = order
+module.exports.orderDetails = getOrderDetails

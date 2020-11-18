@@ -13,6 +13,7 @@ const accessToken = require('./access-token');
 const deliveryFee = require('./fees');
 const merchant = require('./merchant');
 const order = require('./order')
+const admin = require('./admin')
 const router = express.Router();
 
 /**
@@ -38,6 +39,7 @@ router.use(authHandler.authenticateUser);
 router.use('/fees', deliveryFee);
 router.use('/merchant', merchant);
 router.use('/order', order)
+router.use('/admin', admin)
 
 
 
