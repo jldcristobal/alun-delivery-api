@@ -11,6 +11,9 @@ console.log('controllers - admin')
  */
 const admin = {}
 
+/*
+ * Get phone number of Alun Food admins from database
+ */
 const getPhoneNumbers = async () => {
     try {
         const numbers = await Admin.findAll({
@@ -24,12 +27,30 @@ const getPhoneNumbers = async () => {
     }
 }
 
+/*
+ * Format order cart to SMS-friendly message
+ * @param {String} orderNumber
+ * @param {String} orderCart: JSON string
+ */
 const formatSms = (orderNumber, orderCart) => {
-    return `Order No. ${orderNumber} \n\n${orderCart}`
+    const order = JSON.parse(orderCart)
+    var text = `Good day from ALUN FOOD! We just received the following order for ${order.merchant}:\n\n`
+
+    JSON.parse(order.cart).forEach(cart => {
+        Object.keys(cart).forEach(key => {
+            if (key == "item") text += `* ${cart[key]}\n`
+            else text += `${cart[key]}\n`
+        })
+        text += "\n"
+    })
+
+    text += `[Ref: Order No. ${orderNumber}]\n\nPlease reply "Okay" to confirm that you have received this message, or you may also check your FB messenger to respond to this order.\n\nThank you!`
+
+    return text
 }
 
 /**
- * Add order
+ * Send SMS notification to Alun Food admin
  */
 admin.sendSms = async (req, res) => {
 
@@ -52,7 +73,6 @@ admin.sendSms = async (req, res) => {
                         message: message,
                         sendername: "ALUN"
                     })
-
                     console.log({response})
                 } catch (err) {
                     console.log(err)
