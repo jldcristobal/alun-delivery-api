@@ -14,14 +14,14 @@ const admin = {}
 /*
  * Get phone number of Alun Food admins from database
  */
-const getPhoneNumbers = async () => {
+const getAdminInfo = async () => {
     try {
-        const numbers = await Admin.findAll({
-            attributes: [ 'phone_number' ]
+        const info = await Admin.findAll({
+            attributes: [ 'phone_number', 'subscriber_id' ]
         }, {
             where: { notification_on: 1 }
         })
-        return numbers
+        return info
     } catch (e) {
         console.log(e)
     }
@@ -50,9 +50,9 @@ const formatSms = (orderNumber, orderCart) => {
 }
 
 /**
- * Send SMS notification to Alun Food admin
+ * Send SMS notification for orders to Alun Food admin
  */
-admin.sendSms = async (req, res) => {
+admin.notifyOrderSms = async (req, res) => {
 
     let jsonRes
     const { orderUuid } = req.body
@@ -63,13 +63,13 @@ admin.sendSms = async (req, res) => {
         console.log(message)
 
         try {
-            const numbers = await getPhoneNumbers()
-            numbers.forEach(async (number) => {
-                console.log(number.getDataValue("phone_number"))
+            const adminInfo = await getAdminInfo()
+            adminInfo.forEach(async (info) => {
+                console.log(info.getDataValue("phone_number"))
                 try {
                     let response = await axios.post("https://api.semaphore.co/api/v4/messages", {
                         apikey: config.SEMAPHORE_API_KEY,
-                        number: number.getDataValue("phone_number"),
+                        number: info.getDataValue("phone_number"),
                         message: message,
                         sendername: "ALUN"
                     })
@@ -92,6 +92,61 @@ admin.sendSms = async (req, res) => {
     }
 
     util.sendResponse(res, jsonRes)
+}
+
+/*
+ * Send Messenger notifications for merchant response on orders
+ */
+admin.notifyChatResponse = async (req, res) => {
+    
+    const { textResponse } = req.body
+
+    try {
+        const adminInfo = await getAdminInfo()
+        adminInfo.forEach(async (info) => {
+            try {
+                let response = await axios.post("https://api.manychat.com/fb/sending/sendContent", {
+                    subscriber_id: info.getDataValue("subscriber_id"),
+                    data: {
+                        version: "v2",
+                        content: {
+                            messages: [
+                                {
+                                    type: "text",
+                                    text: textResponse
+                                }
+                            ]
+                        }
+                    },
+                    message_tag: "POST_PURCHASE_UPDATE"
+                }, {
+                    headers: {
+                        Authorization: `Bearer ${config.MANYCHAT_API_KEY}`
+                    }
+                })
+
+                console.log({response})
+
+                if (response.data.status == "success") {
+                    util.sendResponse(res, {
+                        statusCode: 200,
+                        success: true,
+                        message: "Response forwarded to admins!"
+                    })
+                } else {
+                    util.sendResponse(res, {
+                        statusCode: 500,
+                        success: false,
+                        message: "Failed to forward response to admins!"
+                    })
+                }
+            } catch (err) {
+                console.error(err)
+            }
+        })
+    } catch (err) {
+        console.error(err)
+    }
 }
 
 module.exports = admin
