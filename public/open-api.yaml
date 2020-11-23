@@ -354,6 +354,101 @@ paths:
       security:
       - bearerAuth: []
 
+  "/api/pool/delivery":
+    post:
+      summary: Create delivery booking 
+      tags:
+      - Pool
+      description: Create delivery booking 
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/definitions/createPoolDeliverySource"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+                schema:
+                  type: object
+                  properties:
+                    success:
+                      type: boolean
+                      example: true
+                    message:
+                      type: string
+                      example: "Delivery booking successful"
+        "500":
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/definitions/ErrorResponse"
+      security:
+      - bearerAuth: []
+    get:
+      summary: Get delivery bookings 
+      tags:
+      - Pool
+      description: Booking Transaction History 
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+                schema:
+                  type: object
+                  properties:
+                    success:
+                      type: boolean
+                      example: true
+                    result:
+                      type: object
+                      example: [
+                        {
+                            "trackingNumber": "ZBOA4WEVTKR",
+                            "receiverAddress": "Santo Domingo, Iriga",
+                            "createdAt": "2020-11-23T05:22:56.000Z",
+                            "status": "Pending"
+                        },
+                        {
+                            "trackingNumber": "12345678901",
+                            "receiverAddress": "Santo Domingo, Iriga",
+                            "createdAt": "2020-11-23T05:21:44.000Z",
+                            "status": "Pending"
+                        },
+                        {
+                            "trackingNumber": "3H917JWBWWD",
+                            "receiverAddress": "Santo Domingo, Iriga",
+                            "createdAt": "2020-11-23T05:19:51.000Z",
+                            "status": "Pending"
+                        },
+                        {
+                            "trackingNumber": "VECVHXMBAHP",
+                            "receiverAddress": "Santo Domingo, Iriga",
+                            "createdAt": "2020-11-23T05:18:19.000Z",
+                            "status": "Pending"
+                        }
+                      ]
+        "500":
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/definitions/ErrorResponse"
+      security:
+      - bearerAuth: []
+
 definitions:
   userAddSource:
     properties:
@@ -456,6 +551,30 @@ definitions:
         merchantName:
           type: string
           example: "Desny Grill"
+  
+  createPoolDeliverySource:
+    properties:
+        senderName:
+          type: string
+          example: "Mr. Fu"
+        senderAddress:
+          type: string
+          example: "H&M Rob Naga"
+        receiverName:
+          type: string
+          example: "Ms. Tabag"
+        receiverAddress:
+          type: string
+          example: "Santo Domingo, Iriga"
+        nearestLandmark:
+          type: string
+          example: "malapit sa simbahan"
+        receiverNumber:
+          type: string
+          example: "09123456789"
+        deliveryDate:
+          type: string
+          example: "2020-11-24"
   
   ErrorResponse:
     type: object

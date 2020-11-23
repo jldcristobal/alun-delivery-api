@@ -14,6 +14,8 @@ const deliveryFee = require('./fees');
 const merchant = require('./merchant');
 const order = require('./order')
 const admin = require('./admin')
+const poolDelivery = require('./pool/delivery')
+
 const router = express.Router();
 
 /**
@@ -40,6 +42,7 @@ router.use('/fees', deliveryFee);
 router.use('/merchant', merchant);
 router.use('/order', order)
 router.use('/admin', admin)
+router.use('/pool/delivery', poolDelivery)
 
 
 
