@@ -75,7 +75,7 @@ delivery.viewDeliveries = async (req, res) => {
   
   try {
       let deliveryList = await Delivery.findAll({
-          attributes: ['trackingNumber', 'receiverAddress', 'createdAt', 'status'],
+          attributes: { exclude: ['updatedAt'] },
           order: [['createdAt', 'DESC']]
         });
 
