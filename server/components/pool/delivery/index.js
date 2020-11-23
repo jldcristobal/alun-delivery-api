@@ -19,6 +19,6 @@ const router = express.Router();
  */
 router.post('/', deliveryCtrl.createDelivery);
 router.get('/', deliveryCtrl.viewDeliveries);
-// router.post('/cancel/:deliveryId', deliveryCtrl.cancelDelivery);
+router.put('/:deliveryId/cancel', deliveryCtrl.cancelDelivery);
 
 module.exports = router;

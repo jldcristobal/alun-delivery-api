@@ -1,6 +1,6 @@
 CREATE TABLE `deliveries` ( 
     `deliveryId` INT(11) NOT NULL AUTO_INCREMENT ,
-    `trackingNumber` VARCHAR(11) NOT NULL UNIQUE ,
+    `trackingNumber` VARCHAR(12) NOT NULL UNIQUE ,
     `senderName` VARCHAR(100) NOT NULL , 
     `senderAddress` VARCHAR(100) NOT NULL , 
     `receiverName` VARCHAR(100) NOT NULL , 

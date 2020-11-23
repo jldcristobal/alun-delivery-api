@@ -3,10 +3,16 @@ const { DataTypes } = require('sequelize');
 
 const Delivery = sequelize.define('delivery', {
     // Model attributes are defined here
-    trackingNumber: {
-        type: DataTypes.STRING(11),
+    deliveryId: {
+        type: DataTypes.INTEGER(11),
         allowNull: false,
+        autoIncrement: true,
         primaryKey: true
+    },
+    trackingNumber: {
+        type: DataTypes.STRING(12),
+        allowNull: false,
+        unique: true
     },
     senderName: {
       type: DataTypes.STRING(100),
