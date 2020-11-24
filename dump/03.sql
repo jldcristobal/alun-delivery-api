@@ -8,6 +8,8 @@ CREATE TABLE `deliveries` (
     `nearestLandmark` VARCHAR(100) NOT NULL,
     `receiverNumber` VARCHAR(11) NOT NULL , 
     `deliveryDate` DATE NOT NULL ,
+    `pickupDatetime` TIMESTAMP NULL ,
+    `deliveryDatetime` TIMESTAMP NULL ,
     `status` VARCHAR(10) NOT NULL DEFAULT 'pending',
     `createdAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP , 
     `updatedAt` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ,
