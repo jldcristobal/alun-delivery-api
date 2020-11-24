@@ -425,6 +425,8 @@ paths:
                           "nearestLandmark": "malapit sa simbahan",
                           "receiverNumber": "09123456789",
                           "deliveryDate": "2020-11-25",
+                          "pickupDatetime": null,
+                          "deliveryDatetime": null,
                           "status": "Pending",
                           "createdAt": "2020-11-23T19:15:43.000Z"
                         },
@@ -438,7 +440,9 @@ paths:
                           "nearestLandmark": "malapit sa simbahan",
                           "receiverNumber": "09123456789",
                           "deliveryDate": "2020-11-25",
-                          "status": "Pending",
+                          "pickupDatetime": null,
+                          "deliveryDatetime": null,
+                          "status": "Cancelled",
                           "createdAt": "2020-11-23T19:13:36.000Z"
                         }
                       ]

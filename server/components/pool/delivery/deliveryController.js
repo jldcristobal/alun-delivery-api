@@ -79,7 +79,6 @@ delivery.viewDeliveries = async (req, res) => {
   
   try {
       let deliveryList = await Delivery.findAll({
-          where: { status: { [Sequelize.Op.not]: 'Cancelled' } },
           attributes: { exclude: ['updatedAt'] },
           order: [['createdAt', 'DESC']]
         });
