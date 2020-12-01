@@ -85,10 +85,20 @@ admin.notifyOrderSms = async (req, res) => {
             }
         } catch (err) {
             console.log(err)
+            jsonRes = {
+                statusCode: 500,
+                success: false,
+                message: `ERROR: SMS notification for Order No. ${order_number} NOT SENT!`
+            }
         }
 
     } catch (err) {
         console.log(err)
+        jsonRes = {
+            statusCode: 500,
+            success: false,
+            message: "Order does not exist!"
+        }
     }
 
     util.sendResponse(res, jsonRes)
@@ -99,6 +109,7 @@ admin.notifyOrderSms = async (req, res) => {
  */
 admin.notifyChatResponse = async (req, res) => {
     
+    let jsonRes = null
     const { textResponse } = req.body
 
     try {
@@ -128,25 +139,37 @@ admin.notifyChatResponse = async (req, res) => {
                 console.log({response})
 
                 if (response.data.status == "success") {
-                    util.sendResponse(res, {
+                    jsonRes = {
                         statusCode: 200,
                         success: true,
                         message: "Response forwarded to admins!"
-                    })
+                    }
                 } else {
-                    util.sendResponse(res, {
+                    jsonRes = {
                         statusCode: 500,
                         success: false,
                         message: "Failed to forward response to admins!"
-                    })
+                    }
                 }
             } catch (err) {
                 console.error(err)
+                jsonRes = {
+                    statusCode: 500,
+                    success: false,
+                    message: "Failed to forward response to admins!"
+                }
             }
         })
     } catch (err) {
         console.error(err)
+        jsonRes = {
+            statusCode: 500,
+            success: false,
+            message: "Failed to forward response to admins!"
+        }
     }
+
+    util.sendResponse(res, jsonRes)
 }
 
 /**
