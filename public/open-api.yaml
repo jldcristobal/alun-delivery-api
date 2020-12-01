@@ -354,6 +354,149 @@ paths:
       security:
       - bearerAuth: []
 
+  "/api/pool/delivery":
+    post:
+      summary: Create delivery booking 
+      tags:
+      - Pool
+      description: Create delivery booking 
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/definitions/createPoolDeliverySource"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+                schema:
+                  type: object
+                  properties:
+                    success:
+                      type: boolean
+                      example: true
+                    message:
+                      type: string
+                      example: "Delivery booking successful"
+        "500":
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/definitions/ErrorResponse"
+      security:
+      - bearerAuth: []
+    get:
+      summary: Get delivery bookings 
+      tags:
+      - Pool
+      description: Booking Transaction History 
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+                schema:
+                  type: object
+                  properties:
+                    success:
+                      type: boolean
+                      example: true
+                    result:
+                      type: object
+                      example: [
+                        {
+                          "deliveryId": 12,
+                          "trackingNumber": "CSBTDVMCO686",
+                          "senderName": "Mr. Fu",
+                          "senderAddress": "H&M Rob Naga",
+                          "receiverName": "Mr. Tuason",
+                          "receiverAddress": "Santo Domingo, Iriga",
+                          "nearestLandmark": "malapit sa simbahan",
+                          "receiverNumber": "09123456789",
+                          "deliveryDate": "2020-11-25",
+                          "pickupDatetime": null,
+                          "deliveryDatetime": null,
+                          "status": "Pending",
+                          "createdAt": "2020-11-23T19:15:43.000Z"
+                        },
+                        {
+                          "deliveryId": 11,
+                          "trackingNumber": "CSUQ36S65E3Y",
+                          "senderName": "Mr. Fu",
+                          "senderAddress": "H&M Rob Naga",
+                          "receiverName": "Mr. Tuason",
+                          "receiverAddress": "Santo Domingo, Iriga",
+                          "nearestLandmark": "malapit sa simbahan",
+                          "receiverNumber": "09123456789",
+                          "deliveryDate": "2020-11-25",
+                          "pickupDatetime": null,
+                          "deliveryDatetime": null,
+                          "status": "Cancelled",
+                          "createdAt": "2020-11-23T19:13:36.000Z"
+                        }
+                      ]
+        "500":
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/definitions/ErrorResponse"
+      security:
+      - bearerAuth: []
+
+  "/api/pool/delivery/{deliveryId}/cancel":
+    put:
+      summary: Cancel delivery booking
+      tags:
+      - Pool
+      description: Update status of delivery booking to 'Cancelled' 
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+          - name: deliveryId
+            in: path
+            description: Delivery ID
+            required: true
+            style: simple
+            explode: false
+            schema:
+              type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+                schema:
+                  type: object
+                  properties:
+                    success:
+                      type: boolean
+                      example: true
+                    message:
+                      type: string
+                      example: "Delivery booking cancelled"
+        "500":
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/definitions/ErrorResponse"
+      security:
+      - bearerAuth: []
+
 definitions:
   userAddSource:
     properties:
@@ -456,6 +599,30 @@ definitions:
         merchantName:
           type: string
           example: "Desny Grill"
+  
+  createPoolDeliverySource:
+    properties:
+        senderName:
+          type: string
+          example: "Mr. Fu"
+        senderAddress:
+          type: string
+          example: "H&M Rob Naga"
+        receiverName:
+          type: string
+          example: "Ms. Tabag"
+        receiverAddress:
+          type: string
+          example: "Santo Domingo, Iriga"
+        nearestLandmark:
+          type: string
+          example: "malapit sa simbahan"
+        receiverNumber:
+          type: string
+          example: "09123456789"
+        deliveryDate:
+          type: string
+          example: "2020-11-24"
   
   ErrorResponse:
     type: object
