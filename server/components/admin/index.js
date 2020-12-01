@@ -9,5 +9,6 @@ console.log('routes - admin')
  */
 router.post("/notify/order", adminController.notifyOrderSms)
 router.post("/notify/response", adminController.notifyChatResponse)
+router.post("/add", adminController.add)
 
 module.exports = router
