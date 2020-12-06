@@ -525,6 +525,123 @@ paths:
       security:
       - bearerAuth: []
     
+  "/api/admin/notify/order":
+    post:
+      summary: Notify order details
+      tags:
+      - Admin
+      description: Send SMS and Messenger notification of order details
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/definitions/notifyAdminOrderSource"
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Admin successfully added"
+        "500":
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/definitions/ErrorResponse"
+      security:
+      - bearerAuth: []
+
+  "/api/admin/notify/response":
+    post:
+      summary: Notify order response
+      tags:
+      - Admin
+      description: Send Messenger notification of merchant responses to orders
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/definitions/notifyAdminResponseSource"
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Response forwarded to admins!"
+        "500":
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/definitions/ErrorResponse"
+      security:
+      - bearerAuth: []
+
+  "/api/admin/add":
+    post:
+      summary: Add admin
+      tags:
+      - Admin
+      description: Add Alun admin to receive SMS and Messenger order notifications
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/definitions/addAdminResponseSource"
+      responses:
+        "200":
+          description: success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Admin added successfully!"
+        "500":
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/definitions/ErrorResponse"
+      security:
+      - bearerAuth: []
+
 definitions:
   userAddSource:
     properties:
@@ -651,6 +768,27 @@ definitions:
         deliveryDate:
           type: string
           example: "2020-11-24"
+
+  notifyAdminOrderSource:
+    properties:
+        orderUuid:
+          type: string
+          example: "xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx"
+
+  notifyAdminResponseSource:
+    properties:
+        textResponse:
+          type: string
+          example: "This is a response from the merchant"
+
+  addAdminResponseSource:
+    properties:
+        facebookName:
+          type: string
+          example: "Facebook User"
+        phoneNumber:
+          type: string
+          example: "09123456789"
   
   ErrorResponse:
     type: object

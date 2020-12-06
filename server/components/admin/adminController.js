@@ -11,7 +11,7 @@ console.log('controllers - admin')
  */
 const admin = {}
 
-/*
+/**
  * Get phone number of Alun Food admins from database
  */
 const getAdminInfo = async () => {
@@ -27,7 +27,7 @@ const getAdminInfo = async () => {
     }
 }
 
-/*
+/**
  * Format order cart to SMS-friendly message
  * @param {String} orderNumber
  * @param {String} orderCart: JSON string
@@ -44,7 +44,7 @@ const formatSms = (orderNumber, orderCart) => {
         text += "\n"
     })
 
-    text += `[Ref: Order No. ${orderNumber}]\n\nPlease reply "Okay" to confirm that you have received this message, or you may also check your FB messenger to respond to this order.\n\nThank you!`
+    text += `[Ref: Order No. ${orderNumber}]\n\nPlease REPLY "Okay" to confirm that you have received this message, or IGNORE this message if you already responded on FB Messenger.\n\nThank you!`
 
     return text
 }
@@ -85,20 +85,31 @@ admin.notifyOrderSms = async (req, res) => {
             }
         } catch (err) {
             console.log(err)
+            jsonRes = {
+                statusCode: 500,
+                success: false,
+                message: `ERROR: SMS notification for Order No. ${order_number} NOT SENT!`
+            }
         }
 
     } catch (err) {
         console.log(err)
+        jsonRes = {
+            statusCode: 500,
+            success: false,
+            message: "Order does not exist!"
+        }
     }
 
     util.sendResponse(res, jsonRes)
 }
 
-/*
+/**
  * Send Messenger notifications for merchant response on orders
  */
 admin.notifyChatResponse = async (req, res) => {
     
+    let jsonRes = null
     const { textResponse } = req.body
 
     try {
@@ -128,25 +139,107 @@ admin.notifyChatResponse = async (req, res) => {
                 console.log({response})
 
                 if (response.data.status == "success") {
-                    util.sendResponse(res, {
+                    jsonRes = {
                         statusCode: 200,
                         success: true,
                         message: "Response forwarded to admins!"
-                    })
+                    }
                 } else {
-                    util.sendResponse(res, {
+                    jsonRes = {
                         statusCode: 500,
                         success: false,
                         message: "Failed to forward response to admins!"
-                    })
+                    }
                 }
             } catch (err) {
                 console.error(err)
+                jsonRes = {
+                    statusCode: 500,
+                    success: false,
+                    message: "Failed to forward response to admins!"
+                }
             }
         })
     } catch (err) {
         console.error(err)
+        jsonRes = {
+            statusCode: 500,
+            success: false,
+            message: "Failed to forward response to admins!"
+        }
     }
+
+    util.sendResponse(res, jsonRes)
+}
+
+/**
+ * Add Alun admin to receive order notifications
+ */
+admin.add = async (req, res) => {
+
+    let jsonRes = null
+    const { facebookName, phoneNumber } = req.body
+
+    try {
+        const name = encodeURI(facebookName)
+        const response = await axios.get(`https://api.manychat.com/fb/subscriber/findByName?name=${name}`, {
+            headers: {
+                Authorization: `Bearer ${config.MANYCHAT_API_KEY}`
+            }
+        })
+
+        if (response.data.data.length) {
+            const manychatId = response.data.data[0].id
+            try {
+                let [, created] = await Admin.findOrCreate({
+                    where: { 
+                        subscriber_id: manychatId,
+                    },
+                    defaults: {
+                        admin_name: facebookName,
+                        phone_number: phoneNumber,
+                        subscriber_id: manychatId
+                    }
+                })
+        
+                if (!created) {
+                    jsonRes = {
+                        statusCode: 400,
+                        success: false,
+                        message: 'Admin already exists'
+                    }
+                } else {
+                    jsonRes = {
+                        statusCode: 200,
+                        success: true,
+                        message: 'Admin added successfully'
+                    }
+                }
+            } catch (err) {
+                console.error(err)
+                jsonRes = {
+                    statusCode: 500,
+                    success: true,
+                    message: 'Error adding admin'
+                }
+            }
+        } else {
+            jsonRes = {
+                statusCode: 400,
+                success: false,
+                message: "Error adding admin. Please make sure that Facebook name is correct or user is subscribed to Alun Delivery Services page."
+            }
+        }
+    } catch (err) {
+        console.error(err)
+        jsonRes = {
+            statusCode: 500,
+            success: false,
+            message: "Error adding admin. Please make sure that Facebook name is correct or user is subscribed to Alun Delivery Services page."
+        }
+    }
+    
+    util.sendResponse(res, jsonRes)
 }
 
 module.exports = admin
