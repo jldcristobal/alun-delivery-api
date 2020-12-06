@@ -416,34 +416,52 @@ paths:
                       type: object
                       example: [
                         {
-                          "deliveryId": 12,
-                          "trackingNumber": "CSBTDVMCO686",
+                          "deliveryId": 18,
+                          "trackingNumber": "CSR14NBKAJKN",
                           "senderName": "Mr. Fu",
                           "senderAddress": "H&M Rob Naga",
-                          "receiverName": "Mr. Tuason",
+                          "receiverName": "Ms. Tabag",
                           "receiverAddress": "Santo Domingo, Iriga",
                           "nearestLandmark": "malapit sa simbahan",
                           "receiverNumber": "09123456789",
-                          "deliveryDate": "2020-11-25",
-                          "pickupDatetime": null,
-                          "deliveryDatetime": null,
-                          "status": "Pending",
-                          "createdAt": "2020-11-23T19:15:43.000Z"
+                          "deliveryDate": "2020-11-24",
+                          "createdAt": "2020-12-06T08:22:27.000Z",
+                          "delivery_status_histories": [
+                            {
+                              "statusHIstoryId": 2,
+                              "status": "Pending",
+                              "createdAt": "2020-12-06T08:22:27.000Z"
+                            }
+                          ]
                         },
                         {
-                          "deliveryId": 11,
-                          "trackingNumber": "CSUQ36S65E3Y",
+                          "deliveryId": 17,
+                          "trackingNumber": "CSCPPG29KKN1",
                           "senderName": "Mr. Fu",
                           "senderAddress": "H&M Rob Naga",
-                          "receiverName": "Mr. Tuason",
+                          "receiverName": "Ms. Tabag",
                           "receiverAddress": "Santo Domingo, Iriga",
                           "nearestLandmark": "malapit sa simbahan",
                           "receiverNumber": "09123456789",
-                          "deliveryDate": "2020-11-25",
-                          "pickupDatetime": null,
-                          "deliveryDatetime": null,
-                          "status": "Cancelled",
-                          "createdAt": "2020-11-23T19:13:36.000Z"
+                          "deliveryDate": "2020-11-24",
+                          "createdAt": "2020-12-06T08:19:16.000Z",
+                          "delivery_status_histories": [
+                            {
+                              "statusHIstoryId": 4,
+                              "status": "Cancelled",
+                              "createdAt": "2020-12-06T08:38:59.000Z"
+                            },
+                            {
+                              "statusHIstoryId": 3,
+                              "status": "For Pick-up",
+                              "createdAt": "2020-12-06T08:35:18.000Z"
+                            },
+                            {
+                              "statusHIstoryId": 1,
+                              "status": "Pending",
+                              "createdAt": "2020-12-06T08:19:16.000Z"
+                            }
+                          ]
                         }
                       ]
         "500":
@@ -455,12 +473,12 @@ paths:
       security:
       - bearerAuth: []
 
-  "/api/pool/delivery/{deliveryId}/cancel":
-    put:
-      summary: Cancel delivery booking
+  "/api/pool/delivery/:deliveryId/status":
+    post:
+      summary: Add delivery status
       tags:
       - Pool
-      description: Update status of delivery booking to 'Cancelled' 
+      description: Update status of delivery booking
       consumes:
         - application/json
       produces:
@@ -474,6 +492,16 @@ paths:
             explode: false
             schema:
               type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "For Pick-up"
       responses:
         "200":
           description: Success
@@ -487,7 +515,7 @@ paths:
                       example: true
                     message:
                       type: string
-                      example: "Delivery booking cancelled"
+                      example: "Delivery booking status updated successfully"
         "500":
           description: Error
           content:
@@ -496,7 +524,7 @@ paths:
                 $ref: "#/definitions/ErrorResponse"
       security:
       - bearerAuth: []
-
+    
 definitions:
   userAddSource:
     properties:

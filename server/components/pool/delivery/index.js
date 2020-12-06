@@ -19,6 +19,6 @@ const router = express.Router();
  */
 router.post('/', deliveryCtrl.createDelivery);
 router.get('/', deliveryCtrl.viewDeliveries);
-router.put('/:deliveryId/cancel', deliveryCtrl.cancelDelivery);
+router.post('/:deliveryId/status', deliveryCtrl.updateStatus);
 
 module.exports = router;

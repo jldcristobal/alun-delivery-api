@@ -44,16 +44,6 @@ const Delivery = sequelize.define('delivery', {
     deliveryDate: {
         type: DataTypes.DATE,
         allowNull: false
-    },
-    pickupDatetime: {
-        type: DataTypes.DATE
-    },
-    deliveryDatetime: {
-        type: DataTypes.DATE
-    },
-    status: {
-        type: DataTypes.STRING,
-        allowNull: false
     }
   });
 

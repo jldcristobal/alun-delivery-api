@@ -4,6 +4,7 @@ const { Sequelize } = require('sequelize');
 
 const Delivery = require('./deliveryModel')
 const DeliveryItem = require('./deliveryItemModel')
+const DeliveryStatus = require('./deliveryStatusModel')
 
 const util = require('../../../helpers/util');
 // const logger = log4js.getLogger('controllers - delivery fee');
@@ -27,7 +28,7 @@ delivery.createDelivery = async (req, res) => {
     let body = req.body
     let trackingNumber = 'CS' + await util.createRandomString(10)
 
-    let [, created] = await Delivery.findOrCreate({
+    let [dlvry, created] = await Delivery.findOrCreate({
       where: { trackingNumber: trackingNumber },
       defaults: {
         trackingNumber: trackingNumber,
@@ -37,8 +38,7 @@ delivery.createDelivery = async (req, res) => {
         receiverAddress: body.receiverAddress,
         nearestLandmark: body.nearestLandmark,
         receiverNumber: body.receiverNumber,
-        deliveryDate: body.deliveryDate,
-        status: 'Pending'
+        deliveryDate: body.deliveryDate
       }
     })
   
@@ -49,13 +49,27 @@ delivery.createDelivery = async (req, res) => {
             message: 'Could not create booking'
         };
     } else { 
-        jsonRes = {
+        let deliveryId = dlvry.deliveryId
+
+        created = await DeliveryStatus.create({
+          deliveryId: deliveryId,
+          status: 'Pending'
+        })
+
+        if(!created) {
+          jsonRes = {
+            statusCode: 400,
+            success: false,
+            message: 'Could not set booking status'
+          };
+        } else {
+          jsonRes = {
             statusCode: 200,
             success: true,
             message: 'Delivery booking successful'
-        }; 
+          };
+        }
     }
-    
   } catch(error) { 
     console.log(error);
     // logger.error(error);
@@ -79,8 +93,19 @@ delivery.viewDeliveries = async (req, res) => {
   
   try {
       let deliveryList = await Delivery.findAll({
-          attributes: { exclude: ['updatedAt'] },
-          order: [['createdAt', 'DESC']]
+          attributes: { 
+            exclude: ['updatedAt'] 
+          },
+          include: [
+            {
+              model: DeliveryStatus,
+              attributes: { exclude: ['statusHistoryId', 'deliveryId', 'updatedAt'] }
+            }
+          ],
+          order: [
+            ['createdAt', 'DESC'],
+            [DeliveryStatus, 'createdAt', 'DESC']
+          ]
         });
 
       if(deliveryList.length === 0) {
@@ -108,27 +133,31 @@ delivery.viewDeliveries = async (req, res) => {
   }
 };
 
-delivery.cancelDelivery = async (req, res) => {
-  // logger.info('inside viewDeliveries()...');
+delivery.updateStatus = async (req, res) => {
+  // logger.info('inside updateStatus()...');
 
   let jsonRes;
   
   try {
-    let updated = await Delivery.update({ status: 'Cancelled' }, {
-        where: { deliveryId: req.params.deliveryId }
-      });
+    let [, created] = await DeliveryStatus.findOrCreate({ 
+      where: { deliveryId: req.params.deliveryId, status: req.body.status },
+      defaults: {
+        deliveryId: req.params.deliveryId,
+        status: req.body.status 
+      }
+    });
 
-      if(updated == 0) {
+      if(!created) { 
         jsonRes = {
             statusCode: 400,
-            success: true,
-            message: 'Could not cancel delivery booking'
-          };
-        } else {
+            success: false,
+            message: 'Could not update delivery status'
+        };
+      } else {
           jsonRes = {
             statusCode: 200,
             success: true,
-            message: 'Delivery booking cancelled'
+            message: 'Delivery booking status updated successfully'
         }; 
       }
   } catch(error) {
