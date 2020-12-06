@@ -8,11 +8,10 @@ CREATE TABLE `delivery_status_histories` (
     PRIMARY KEY (`statusHistoryId`)
 ) ENGINE = InnoDB;
 
-ALTER TABLE `delivery_status_history` 
+ALTER TABLE `delivery_status_histories` 
 ADD FOREIGN KEY (`deliveryId`) 
 REFERENCES `deliveries`(`deliveryId`) 
 ON DELETE RESTRICT ON UPDATE RESTRICT;
-
 ALTER TABLE `deliveries`
 DROP COLUMN `pickupDatetime`, 
 DROP COLUMN `deliveryDatetime`,
